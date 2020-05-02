@@ -11,7 +11,6 @@ from difflr.models import LinearClassifier
 from difflr.data import MNIST
 
 
-
 # class Net(nn.Module):
 #     def __init__(self):
 #         super(Net, self).__init__()
@@ -73,38 +72,10 @@ def train(args, model, device, train_loader, optimizer, epoch):
 
 
 def main():
-    # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
-                        help='input batch size for training (default: 64)')
-    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
-                        help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=14, metavar='N',
-                        help='number of epochs to train (default: 14)')
-    parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
-                        help='learning rate (default: 1.0)')
-    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
-                        help='Learning rate step gamma (default: 0.7)')
-    parser.add_argument('--no-cuda', action='store_true', default=False,
-                        help='disables CUDA training')
-    parser.add_argument('--seed', type=int, default=1, metavar='S',
-                        help='random seed (default: 1)')
-    parser.add_argument('--log-interval', type=int, default=10, metavar='N',
-                        help='how many batches to wait before logging training status')
-
-    parser.add_argument('--save-model', action='store_true', default=False,
-                        help='For Saving the current Model')
-    args = parser.parse_args()
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-
-    torch.manual_seed(args.seed)
-
-    device = torch.device("cuda" if use_cuda else "cpu")
-
-
+    torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_ffn',
+        'model_name': 'gsc_ffn',
         'in_features': 784,
         'dnn_config':
             {
@@ -123,9 +94,6 @@ def main():
     #     train(args, model, device, train_loader, optimizer, epoch)
     #     test(model, device, test_loader)
     #     scheduler.step()
-    #
-    # if args.save_model:
-    #     torch.save(model.state_dict(), "mnist_cnn.pt")
 
 
 if __name__ == '__main__':

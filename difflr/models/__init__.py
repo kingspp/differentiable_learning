@@ -25,7 +25,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = self.name + '-' + generate_timestamp()
         self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_PATH, self.name, 'runs', self.id)
-        os.mkdir(path=self.exp_dir)
+        os.system(f'mkdir -p {self.exp_dir}')
         self.metrics = {
             'time_elapsed': '',
             "timestamp": self.id.split('-')[-1],

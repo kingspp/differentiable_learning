@@ -1,6 +1,30 @@
 import traceback
 import sys
 import json
+import uuid
+import datetime
+
+
+def generate_uuid(name: str = '') -> str:
+    """
+    | **@author:** Prathyush SP
+    |
+    | Generate Unique ID
+    :param name: UID Name
+    :return: Unique ID
+    """
+    return '_'.join([name, str(uuid.uuid4().hex)])
+
+
+def generate_timestamp() -> str:
+    """
+    | **@author:** Prathyush SP
+    |
+    | Generate Timestamp
+    :return: Timestamp in String : Format(YYYY-MM-DD_HH:mm:SEC)
+    """
+    return str(datetime.datetime.now().replace(microsecond=0)).replace(' ', '_').replace(':', '').replace('-', '')
+
 
 # Context manager that copies stdout and any exceptions to a log file
 class Tee(object):

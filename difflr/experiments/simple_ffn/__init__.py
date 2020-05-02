@@ -5,8 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
+from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from difflr.models import LinearClassifier
+from difflr.data import MNIST
+
 
 
 # class Net(nn.Module):
@@ -98,20 +101,7 @@ def main():
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=args.batch_size, shuffle=True, **kwargs)
-    test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])),
-        batch_size=args.test_batch_size, shuffle=True, **kwargs)
+
 
     config = {
         'model_name': 'simple_ffn',
@@ -125,7 +115,7 @@ def main():
 
     model = LinearClassifier(config=config)
 
-    model.fit(epoch=10, lr=0.01, batch_size=32, train_loader=train_loader)
+    model.fit(epochs=1, lr=0.01, batch_size=256, data=MNIST)
     # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     # scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)

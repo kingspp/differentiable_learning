@@ -1,6 +1,6 @@
 import torch
 
-from difflr.models import LinearClassifier
+from difflr.models import LinearClassifierGSC
 from difflr.data import MNISTDataset
 
 
@@ -8,7 +8,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_ffn',
+        'model_name': 'gsc_ffn',
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
@@ -20,7 +20,8 @@ def main():
             }
     }
 
-    model = LinearClassifier(config=config)
+    model = LinearClassifierGSC(config=config)
+    print(model)
     model.fit(dataset=MNISTDataset)
 
 

@@ -60,7 +60,7 @@ class Dataset(torch.utils.data.Dataset):
             yield self.train_data[ndx:min(ndx + batch_size, l)], self.train_label[ndx:min(ndx + batch_size, l)]
 
 
-class MNIST():
+class MNISTDataset():
     def __new__(cls, batch_size, use_cuda, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         train_loader = torch.utils.data.DataLoader(

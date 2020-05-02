@@ -13,6 +13,9 @@ from difflr import DIFFLR_EXPERIMENTS_PATH
 from itertools import count
 import json
 from difflr.utils import CustomJsonEncoder
+import time
+from torchsummary import summary
+
 
 class Model(nn.Module, metaclass=ABCMeta):
     def __init__(self, name: str, config):
@@ -24,6 +27,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_PATH, self.name, 'runs', self.id)
         os.mkdir(path=self.exp_dir)
         self.metrics = {
+            'time_elapsed': '',
             "timestamp": self.id.split('-')[-1],
             'train': {
                 'batch': {
@@ -44,23 +48,30 @@ class Model(nn.Module, metaclass=ABCMeta):
     def evaluate(self, data):
         pass
 
-    def fit(self, epochs, batch_size, data, log_type='epoch', log_interval=1, lr=0.001):
+    def fit(self, dataset, log_type='epoch', log_interval=1):
         with Tee(filename=self.exp_dir + '/model.log'):
+            print('Config: \n', json.dumps(self.config, indent=2), '\n')
             writer = SummaryWriter(f'{self.exp_dir}/graphs')
             self.train()
 
-            train_loader, test_loader = data(batch_size=batch_size, use_cuda=True if self.device == 'cuda' else False)
-            self.optimizer = optim.Adam(self.parameters(), lr=lr)
+            train_loader, test_loader = dataset(batch_size=self.config['batch_size'],
+                                                use_cuda=True if self.device == 'cuda' else False)
+            dataiter = iter(train_loader)
+            images, labels = dataiter.next()
+            print('Model: \n')
+            summary(self, input_size=images.shape[1:])
+            print('\n')
+            self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
 
             global_step = count()
-
-            for epoch in tqdm.tqdm(range(1, epochs + 1)):
+            start_time = time.time()
+            for epoch in tqdm.tqdm(range(1, self.config['epochs'] + 1)):
                 train_loss_batch, train_acc_batch = [], []
                 for batch_idx, (data, target) in enumerate(train_loader):
                     data, target = data.to(self.device), target.to(self.device)
                     self.optimizer.zero_grad()
                     output = self(data)
-                    loss = F.nll_loss(output, target)
+                    loss = F.nll_loss(output, target, reduction='mean')
                     train_loss_batch.append(loss.item())
                     loss.backward()
                     self.optimizer.step()
@@ -81,16 +92,18 @@ class Model(nn.Module, metaclass=ABCMeta):
                 if (log_type == 'epoch' and epoch % log_interval == 0):
                     print(
                         f'Train Epoch: {epoch} | Loss: {mean_epoch_loss:.6f} | Acc: {mean_epoch_acc:.4f}')
-                writer.add_scalar(tag='Train/epoch/loss', scalar_value=mean_epoch_acc, global_step=epoch)
+                writer.add_scalar(tag='Train/epoch/loss', scalar_value=mean_epoch_loss, global_step=epoch)
                 writer.add_scalar(tag='Train/epoch/accuracy', scalar_value=mean_epoch_acc, global_step=epoch)
                 self.metrics['train']['epoch']['loss'].append(mean_epoch_loss)
                 self.metrics['train']['epoch']['accuracy'].append(mean_epoch_acc)
+            self.metrics['time_elapsed'] = time.time() - start_time
 
+            # Test
             test_loss_batch, test_acc_batch = [], []
             for batch_idx, (data, target) in enumerate(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self(data)
-                loss = F.nll_loss(output, target)
+                loss = F.nll_loss(output, target, reduction='sum')
                 test_loss_batch.append(loss.item())
                 loss.backward()
                 acc = accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices)
@@ -103,14 +116,14 @@ class Model(nn.Module, metaclass=ABCMeta):
             self.metrics['test']['accuracy'] = mean_test_acc
             print(
                 f'Test | Loss: {mean_test_loss:.6f} | Acc: {mean_test_acc:.4f}')
+            print(f"Took {self.metrics['time_elapsed']} seconds")
 
-            dataiter = iter(train_loader)
-            images, labels = dataiter.next()
+
 
             self.save()
             writer.add_graph(self, images)
             writer.close()
-            json.dump(self.metrics, open(self.exp_dir+'/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
+            json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
 
     def save(self):
         torch.save(self, f'{self.exp_dir}/{self.name}.ckpt')
@@ -146,15 +159,29 @@ class LinearClassifierGSC(Model):
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
         self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.concat_nodes = 0
         for e, node in enumerate(self.config['dnn_config']["layers"]):
-            prev_node = config["in_features"] if e == 0 else self.config['dnn_config']["layers"][e - 1]
+            if e == 0:
+                prev_node = config["in_features"]
+            else:
+                prev_node += self.config['dnn_config']["layers"][e - 1]
             self.layers.extend([nn.Linear(prev_node, node)])
 
     def forward(self, x):
+        inps = []
         x = x.reshape([x.shape[0], -1])
-        for layer in self.layers[:-1]:
-            x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.layers[-1](x))
+        inps.append(x)
+        x = self.relu_activation(self.layers[0](x))
+        inps.append(x)
+        for e, layer in enumerate(self.layers[1:]):
+            x = inps[0]
+            for i in inps[1:]:
+                x = torch.cat((i, x), 1)
+            if e + 1 > len(self.layers) - 2:
+                return self.softmax_activation(layer(x))
+            else:
+                x = self.relu_activation(layer(x))
+                inps.append(x)
 
     def evaluate(self, data):
         if not isinstance(data, torch.Tensor):

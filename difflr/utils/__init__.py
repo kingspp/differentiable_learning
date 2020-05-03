@@ -3,7 +3,14 @@ import sys
 import json
 import uuid
 import datetime
+import numpy as np
+import torch
+import torch.nn.functional as F
 
+def mse_score(logits, target, num_classes, reduction=None):
+    one_hot_targets = np.eye(num_classes)[target]
+    one_hot_targets = torch.tensor(one_hot_targets, dtype=torch.float).reshape([-1, num_classes])
+    return F.mse_loss(logits, one_hot_targets, reduction=reduction)
 
 def generate_uuid(name: str = '') -> str:
     """

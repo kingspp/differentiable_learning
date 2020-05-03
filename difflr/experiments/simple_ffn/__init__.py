@@ -9,6 +9,7 @@ def main():
 
     config = {
         'model_name': 'simple_ffn',
+        "num_classes": 10,
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,

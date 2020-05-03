@@ -230,10 +230,10 @@ class LinearClassifierDSC(Model):
                 prev_node = config["in_features"]
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
-                self.edge_weights.append(
-                    torch.nn.Parameter(data=torch.tensor(np.ones([prev_node]), dtype=torch.float32),
-                                       requires_grad=True))
-                self.register_parameter(f'w_{e}', self.edge_weights[-1])
+            self.edge_weights.append(
+                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=5), dtype=torch.float32),
+                                   requires_grad=True))
+            self.register_parameter(f'w_{e}', self.edge_weights[-1])
 
             self.layers.extend([nn.Linear(prev_node, node)])
 
@@ -248,9 +248,9 @@ class LinearClassifierDSC(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x * F.sigmoid(self.edge_weights[e])))
+                return self.softmax_activation(layer(x * torch.sigmoid(self.edge_weights[e+1])))
             else:
-                x = self.relu_activation(layer(x * F.sigmoid(self.edge_weights[e])))
+                x = self.relu_activation(layer(x * torch.sigmoid(self.edge_weights[e+1])))
                 inps.append(x)
 
     def evaluate(self, data):

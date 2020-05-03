@@ -8,14 +8,43 @@ import torch
 import torch.nn.functional as F
 from prettytable import PrettyTable
 
-def plot_information_transfer(weights, display=True):
+def plot_information_transfer(model, weights, display=True, debug=True):
     x = PrettyTable()
-    x.field_names = [f"L_{i} "for i in weights]
-    for e, w in enumerate(weights):
-        x.add_row([e, np.mean(w)])
+    x.field_names = ['Contents']+[f"L_{e+1} "for  e, i in enumerate(weights[:])]
+
+    rows = ['L0','L1', 'L2', 'L3']
+    cols = ['L0','L1', 'L2', 'L3']
+    splits = {}
+    for i, w in enumerate(weights[:]):
+        split = [model.layers[0].in_features, model.layers[0].out_features]
+        for j, layer in enumerate(model.layers[1:i+1]):
+            split.append(layer.out_features)
+        splits={**splits, **{f'L{i}_L{e}':s for e, s in enumerate(split)}}
+
+    final_splits = {c: {}for c in cols}
+    for r in rows:
+        for c in cols:
+            s = f"{r}_{c}"
+            if r==c or s not in splits:
+                final_splits[c][r]='--'
+            else:
+                final_splits[c][r] = splits[s]
+
+    print(final_splits)
+    print([w.shape for w in weights])
+    exit()
+
+    for e, w in enumerate(weights[:]):
+        x.add_row([f"L{e+1}", *list(final_splits[f"L{e+1}"].values())])
+
+    if debug:
+        print("\nNodes:")
+        print(x)
 
     if display:
+        print('\nInformation Transfer:')
         print(x)
+
     return x
 
 

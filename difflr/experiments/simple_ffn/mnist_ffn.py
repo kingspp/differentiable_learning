@@ -8,7 +8,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_ffn',
+        'model_name': 'simple_ffn_10p',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 10,
@@ -17,7 +17,7 @@ def main():
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [10, 10, 10]
             }
     }
 

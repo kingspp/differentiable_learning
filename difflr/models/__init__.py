@@ -261,6 +261,68 @@ class LinearClassifierDSC(Model):
         return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()
 
 
+class Binarize(torch.autograd.Function):
+    """Custom rounding of PyTorch tensors
+    Differentiable binarization with straight-through gradient estimation.
+    """
+
+    @staticmethod
+    def forward(ctx, x):
+        # print(x.round())
+        return x.round()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # print(sum(grad_output))
+        return grad_output
+
+
+class LinearClassifierDSCPruned(Model):
+    def __init__(self, config):
+        super().__init__(name='dsc_ffn_pruned', config=config)
+        self.layers = nn.ModuleList([])
+        self.relu_activation = torch.nn.ReLU()
+        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.concat_nodes = 0
+        self.edge_weights = []
+        self.binarize = Binarize.apply
+        for e, node in enumerate(self.config['dnn_config']["layers"]):
+            if e == 0:
+                prev_node = config["in_features"]
+            else:
+                prev_node += self.config['dnn_config']["layers"][e - 1]
+            self.edge_weights.append(
+                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
+                                   requires_grad=True))
+            self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
+
+            self.layers.extend([nn.Linear(prev_node, node)])
+
+    def forward(self, x):
+        inps = []
+        x = x.reshape([x.shape[0], -1])
+        inps.append(x)
+        x = self.relu_activation(self.layers[0](x * self.binarize(torch.sigmoid(self.edge_weights[0]))))
+        inps.append(x)
+        for e, layer in enumerate(self.layers[1:]):
+            x = inps[0]
+            for i in inps[1:]:
+                x = torch.cat((i, x), 1)
+            if e + 1 > len(self.layers) - 2:
+                return self.softmax_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e+1]))))
+            else:
+                x = self.relu_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e+1]))))
+                inps.append(x)
+
+    def evaluate(self, data):
+        if not isinstance(data, torch.Tensor):
+            data = torch.tensor(data, dtype=torch.float32)
+        prediction_probabilities = self.forward(data.reshape([-1, self.timesteps]))
+        predicted_value, predicted_class = torch.max(prediction_probabilities, 1)
+        return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()
+
+
+
 class CNNClassifier(Model):
     def __init__(self, config):
         super().__init__(name='simple_ffn', config=config)

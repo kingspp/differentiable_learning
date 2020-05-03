@@ -262,4 +262,24 @@ class LinearClassifierDSC(Model):
 
 
 class CNNClassifier(Model):
-    pass
+    def __init__(self, config):
+        super().__init__(name='simple_ffn', config=config)
+        self.layers = nn.ModuleList([])
+        self.relu_activation = torch.nn.ReLU()
+        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        for e, node in enumerate(self.config['dnn_config']["layers"]):
+            prev_node = config["in_features"] if e == 0 else self.config['dnn_config']["layers"][e - 1]
+            self.layers.extend([nn.Linear(prev_node, node)])
+
+    def forward(self, x):
+        x = x.reshape([x.shape[0], -1])
+        for layer in self.layers[:-1]:
+            x = self.relu_activation(layer(x))
+        return self.softmax_activation(self.layers[-1](x))
+
+    def evaluate(self, data):
+        if not isinstance(data, torch.Tensor):
+            data = torch.tensor(data, dtype=torch.float32)
+        prediction_probabilities = self.forward(data.reshape([-1, self.timesteps]))
+        predicted_value, predicted_class = torch.max(prediction_probabilities, 1)
+        return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()

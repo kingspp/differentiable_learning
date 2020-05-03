@@ -25,8 +25,8 @@ import torch.nn as nn
 import torch
 from torchvision import models
 
-model = torch.hub.load('pytorch/vision:v0.6.0', 'densenet121', pretrained=True)
-from pprint import pprint
+# model = torch.hub.load('pytorch/vision:v0.6.0', 'densenet121', pretrained=True)
+# from pprint import pprint
 
 
 # pprint(nn.Sequential(*list(model.children())[:-2]))
@@ -42,27 +42,25 @@ from pprint import pprint
 # print(model.state_dict()['features.denseblock1.denselayer1.conv1.weight'](inp).shape)
 
 
-class DenseNetTest(nn.Module):
-    def __init__(self, original_model):
-        super(DenseNetTest, self).__init__()
-        print(original_model)
-        exit()
-        self.features = nn.Sequential(*list(original_model.children())[:-1])
-
-    def forward(self, x):
-        print('input_shape : ', x.shape)
-        # x = self.features(x)
-        for i, layer in enumerate(self.features):
-            x = layer(x)
-            print(f'Layer {i + 1} - {x.shape}')
-        exit()
-        return x
-
-
-model = torch.hub.load('pytorch/vision:v0.6.0', 'densenet121', pretrained=True)
-dense = DenseNetTest(model)
-inp = torch.ones((1, 3, 224,224))
-dense(inp)
+# class DenseNetTest(nn.Module):
+#     def __init__(self, original_model):
+#         super(DenseNetTest, self).__init__()
+#         self.features = list(original_model.children())[:-1]
+#
+#     def forward(self, x):
+#         print('input_shape : ', x.shape)
+#         # x = self.features(x)
+#         for i, layer in enumerate(*self.features):
+#             x = layer(x)
+#             print(f'Name: {layer}|\nLayer {i + 1} - {x.shape}')
+#         exit()
+#         return x
+#
+#
+# model = torch.hub.load('pytorch/vision:v0.6.0', 'densenet121', pretrained=True)
+# dense = DenseNetTest(model)
+# inp = torch.ones((1, 3, 224,224))
+# dense(inp)
 # outputs = res50_conv2(inputs)
 # outputs.data.shape
 

@@ -8,44 +8,66 @@ import torch
 import torch.nn.functional as F
 from prettytable import PrettyTable
 
-def plot_information_transfer(model, weights, display=True, debug=True):
-    x = PrettyTable()
-    x.field_names = ['Contents']+[f"L_{e+1} "for  e, i in enumerate(weights[:])]
 
-    rows = ['L0','L1', 'L2', 'L3']
-    cols = ['L0','L1', 'L2', 'L3']
-    splits = {}
+def split_array(array, splits):
+    tot = 0
+    splitted_array = []
+    for e, s in enumerate(splits):
+        if e==0:
+            splitted_array.append(array[0:s])
+        else:
+            splitted_array.append(array[tot:tot+s])
+        tot+=s
+    return splitted_array
+    
+
+
+def plot_information_transfer(model, weights, display=True, debug=False):
+    node_table = PrettyTable()
+    weight_table = PrettyTable()
+    node_table.field_names = ['Contents', 'L0']+[f"L_{e+1} "for  e, i in enumerate(weights[:])]
+    weight_table.field_names = ['Contents', 'L0'] + [f"L_{e + 1} " for e, i in enumerate(weights[:])]
+    rows = ['L0', 'L1', 'L2', 'L3']
+    cols = ['L0', 'L1', 'L2', 'L3']
+
+    splits = {}    
     for i, w in enumerate(weights[:]):
-        split = [model.layers[0].in_features, model.layers[0].out_features]
-        for j, layer in enumerate(model.layers[1:i+1]):
+        split = [model.layers[0].in_features]
+        for j, layer in enumerate(model.layers[:i]):
             split.append(layer.out_features)
-        splits={**splits, **{f'L{i}_L{e}':s for e, s in enumerate(split)}}
+        splitted_weights = split_array(w, split)
+        splits={**splits, **{f'L{e}-to-L{i+1}':{'nodes':s, 'weights':splitted_weights[e]} for e, s in enumerate(split)}}
 
-    final_splits = {c: {}for c in cols}
+    splits = dict(sorted(splits.items()))
+
+    nodes = {c: {}for c in cols}
+    _weights = {c: {} for c in cols}
     for r in rows:
         for c in cols:
-            s = f"{r}_{c}"
+            s = f"{c}-to-{r}"
             if r==c or s not in splits:
-                final_splits[c][r]='--'
+                nodes[c][r]='--'
+                _weights[c][r] = '--'
             else:
-                final_splits[c][r] = splits[s]
+                nodes[c][r] = splits[s]['nodes']
+                _weights[c][r] = round(splits[s]['weights'].mean(),2)
 
-    print(final_splits)
-    print([w.shape for w in weights])
-    exit()
 
+    node_table.add_row([f"L{0}", *list(nodes[f"L{0}"].values())])
+    weight_table.add_row([f"L{0}", *list(_weights[f"L{0}"].values())])
     for e, w in enumerate(weights[:]):
-        x.add_row([f"L{e+1}", *list(final_splits[f"L{e+1}"].values())])
+        node_table.add_row([f"L{e+1}", *list(nodes[f"L{e+1}"].values())])
+        weight_table.add_row([f"L{e + 1}", *list(_weights[f"L{e + 1}"].values())])
 
     if debug:
         print("\nNodes:")
-        print(x)
+        print(node_table)
 
     if display:
         print('\nInformation Transfer:')
-        print(x)
+        print(weight_table)
 
-    return x
+    return weight_table
 
 
         

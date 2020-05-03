@@ -13,7 +13,7 @@ def main():
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-3,
+        'lr': 1e-2,
         'dnn_config':
             {
 

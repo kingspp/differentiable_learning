@@ -6,14 +6,12 @@ from difflr.data import MNISTDataset
 import numpy as np
 import random
 
-CONFIG.DRY_RUN = False
+CONFIG.DRY_RUN = True
 
 def epoch_end_hook(model:LinearClassifierDSC):
-    print('Variance: ', np.mean([param.var().item() for param in model.edge_weights]))
-    edge_weights = [param.detach().numpy() for param in model.edge_weights]
+    edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
     plot_information_transfer(model, edge_weights)
-    exit()
-    pass
+
 
 
 def main():
@@ -25,7 +23,7 @@ def main():
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-3,
+        'lr': 1e-2,
         'dnn_config':
             {
 
@@ -34,7 +32,8 @@ def main():
     }
 
     model = LinearClassifierDSC(config=config)
-    model.fit(dataset=MNISTDataset, batch_end_hook=epoch_end_hook)
+    epoch_end_hook(model)
+    model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook)
 
 
 if __name__ == '__main__':

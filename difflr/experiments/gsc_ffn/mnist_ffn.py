@@ -4,7 +4,7 @@ from difflr.models import LinearClassifierGSC
 from difflr.data import MNISTDataset
 from difflr import CONFIG
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def main():
     torch.manual_seed(0)

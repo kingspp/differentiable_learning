@@ -6,7 +6,7 @@ from difflr.data import MNISTDataset
 import numpy as np
 import random
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):
     edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
@@ -18,7 +18,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'dsc_ffn_50',
+        'model_name': 'dsc_ffn',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 10,

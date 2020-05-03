@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from difflr import DIFFLR_DATA_PATH
 from torchvision import datasets, transforms
+from torch.utils.data import SubsetRandomSampler
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -64,18 +65,18 @@ class MNISTDataset():
     def __new__(cls, batch_size, use_cuda, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         train_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=False,
-                           transform=transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize((0.1307,), (0.3081,))
-                           ])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+                datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=False,
+                               transform=transforms.Compose([
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.1307,), (0.3081,))
+                               ])),
+                batch_size=batch_size, shuffle=True, **kwargs)
         test_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,))
-            ])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+                datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.1307,), (0.3081,))
+                ])),
+                batch_size=batch_size, shuffle=True, **kwargs)
         return train_loader, test_loader
 
 
@@ -83,14 +84,14 @@ class FashionMNISTDataset():
     def __new__(cls, batch_size, use_cuda, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         train_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True,
-                                  transform=transforms.Compose(
-                                      [transforms.ToTensor(),
-                                       transforms.Normalize((0.5,), (0.5,))])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+                datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True,
+                                      transform=transforms.Compose(
+                                              [transforms.ToTensor(),
+                                               transforms.Normalize((0.5,), (0.5,))])),
+                batch_size=batch_size, shuffle=True, **kwargs)
         test_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose(
-                [transforms.ToTensor(),
-                 transforms.Normalize((0.5,), (0.5,))])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+                datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose(
+                        [transforms.ToTensor(),
+                         transforms.Normalize((0.5,), (0.5,))])),
+                batch_size=batch_size, shuffle=True, **kwargs)
         return train_loader, test_loader

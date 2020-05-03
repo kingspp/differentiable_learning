@@ -202,6 +202,7 @@ class LinearClassifierDSC(Model):
         self.relu_activation = torch.nn.ReLU()
         self.softmax_activation = torch.nn.Softmax(dim=-1)
         self.concat_nodes = 0
+        self.w = torch.nn.Parameter(data=torch.tensor(np.ones([N_TIMESTEPS]), dtype=torch.float32), requires_grad=True)
         for e, node in enumerate(self.config['dnn_config']["layers"]):
             if e == 0:
                 prev_node = config["in_features"]

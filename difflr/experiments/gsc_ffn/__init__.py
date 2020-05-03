@@ -9,6 +9,7 @@ def main():
 
     config = {
         'model_name': 'gsc_ffn',
+        "num_classes": 10,
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
@@ -21,8 +22,7 @@ def main():
     }
 
     model = LinearClassifierGSC(config=config)
-    print(model)
-    # model.fit(dataset=MNISTDataset)
+    model.fit(dataset=MNISTDataset)
 
 
 if __name__ == '__main__':

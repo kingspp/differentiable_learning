@@ -12,7 +12,7 @@ import os
 from difflr import DIFFLR_EXPERIMENTS_PATH
 from itertools import count
 import json
-from difflr.utils import CustomJsonEncoder
+from difflr.utils import CustomJsonEncoder, mse_score
 import time
 from torchsummary import summary
 
@@ -32,15 +32,18 @@ class Model(nn.Module, metaclass=ABCMeta):
             'train': {
                 'batch': {
                     'loss': [],
-                    'accuracy': []
+                    'accuracy': [],
+                    'mse':[]
                 },
                 'epoch': {
                     'loss': [],
                     'accuracy': [],
+                    'mse': []
                 }
             }, 'test': {
                 'loss': '',
                 'accuracy': '',
+                'mse': []
             }
         }
 
@@ -70,59 +73,67 @@ class Model(nn.Module, metaclass=ABCMeta):
             global_step = count()
             start_time = time.time()
             for epoch in tqdm.tqdm(range(1, self.config['epochs'] + 1)):
-                train_loss_batch, train_acc_batch = [], []
+                train_metrics = {'loss': [], 'acc': [], 'mse': []}
                 for batch_idx, (data, target) in enumerate(train_loader):
                     data, target = data.to(self.device), target.to(self.device)
                     self.optimizer.zero_grad()
                     output = self(data)
                     loss = F.nll_loss(output, target, reduction='mean')
-                    train_loss_batch.append(loss.item())
+                    train_metrics['loss'].append(loss.item())
                     loss.backward()
                     self.optimizer.step()
-                    acc = accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices)
-                    train_acc_batch.append(acc)
+                    train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))
+                    train_metrics['mse'].append(
+                        mse_score(logits=output, target=target, num_classes=self.config['num_classes'], reduction='mean').item())
                     writer.add_scalar(tag='Train/batch/loss', scalar_value=loss.item(), global_step=next(global_step))
-                    writer.add_scalar(tag='Train/batch/accuracy', scalar_value=acc, global_step=next(global_step))
+                    writer.add_scalar(tag='Train/batch/accuracy', scalar_value=train_metrics['acc'][-1], global_step=next(global_step))
+                    writer.add_scalar(tag='Train/batch/mse', scalar_value=train_metrics['mse'][-1],
+                                      global_step=next(global_step))
                     self.metrics['train']['batch']['loss'].append(loss.item())
-                    self.metrics['train']['batch']['accuracy'].append(acc)
+                    self.metrics['train']['batch']['accuracy'].append(train_metrics['acc'][-1])
+                    self.metrics['train']['batch']['mse'].append(train_metrics['mse'][-1])
 
                     if (log_type == 'batch' and batch_idx % log_interval == 0):
                         print(
                             f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} '
-                            f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}\tAcc: {acc}')
-
-                mean_epoch_loss = np.mean(train_loss_batch)
-                mean_epoch_acc = np.mean(train_acc_batch)
+                            f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}\tAcc: '
+                            f'{train_metrics["acc"][-1]:.4f}\tMSE: {train_metrics["mse"][-1]:.4f}')
+                train_metrics_mean = {k: np.mean(v) for k, v in train_metrics.items()}
                 if (log_type == 'epoch' and epoch % log_interval == 0):
                     print(
-                        f'Train Epoch: {epoch} | Loss: {mean_epoch_loss:.6f} | Acc: {mean_epoch_acc:.4f}')
-                writer.add_scalar(tag='Train/epoch/loss', scalar_value=mean_epoch_loss, global_step=epoch)
-                writer.add_scalar(tag='Train/epoch/accuracy', scalar_value=mean_epoch_acc, global_step=epoch)
-                self.metrics['train']['epoch']['loss'].append(mean_epoch_loss)
-                self.metrics['train']['epoch']['accuracy'].append(mean_epoch_acc)
+                        f'Train Epoch: {epoch} | Loss: {train_metrics_mean["loss"]:.6f} '
+                        f'| Acc: {train_metrics_mean["acc"]:.4f}'
+                        f'| MSE: {train_metrics_mean["mse"]:.4f}')
+                writer.add_scalar(tag='Train/epoch/loss', scalar_value=train_metrics_mean["loss"], global_step=epoch)
+                writer.add_scalar(tag='Train/epoch/accuracy', scalar_value=train_metrics_mean["acc"], global_step=epoch)
+                writer.add_scalar(tag='Train/epoch/mse', scalar_value=train_metrics_mean["mse"], global_step=epoch)
+                self.metrics['train']['epoch']['loss'].append(train_metrics_mean["loss"])
+                self.metrics['train']['epoch']['accuracy'].append(train_metrics_mean["acc"])
+                self.metrics['train']['epoch']['mse'].append(train_metrics_mean["mse"])
             self.metrics['time_elapsed'] = time.time() - start_time
 
             # Test
-            test_loss_batch, test_acc_batch = [], []
+            test_metrics = {'loss': [], 'acc': [], 'mse': []}
             for batch_idx, (data, target) in enumerate(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self(data)
                 loss = F.nll_loss(output, target, reduction='sum')
-                test_loss_batch.append(loss.item())
+                test_metrics['loss'].append(loss.item())
                 loss.backward()
-                acc = accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices)
-                test_acc_batch.append(acc)
+                test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))
+                test_metrics['mse'].append(
+                    mse_score(logits=output, target=target, num_classes=self.config['num_classes'], reduction='sum').item())
 
-            mean_test_loss, mean_test_acc = np.mean(train_loss_batch), np.mean(train_acc_batch)
-            writer.add_scalar('Test/epoch/loss', mean_test_loss)
-            writer.add_scalar('Test/epoch/accuracy', mean_test_acc)
-            self.metrics['test']['loss'] = mean_test_loss
-            self.metrics['test']['accuracy'] = mean_test_acc
+            test_metrics_mean = {k: np.mean(v) for k, v in test_metrics.items()}
+            writer.add_scalar('Test/loss', test_metrics_mean['loss'])
+            writer.add_scalar('Test/accuracy', test_metrics_mean['acc'])
+            writer.add_scalar('Test/mse', test_metrics_mean['mse'])
+            self.metrics['test']['loss'] = test_metrics_mean['loss']
+            self.metrics['test']['accuracy'] = test_metrics_mean['acc']
+            self.metrics['test']['mse'] = test_metrics_mean['mse']
             print(
-                f'Test | Loss: {mean_test_loss:.6f} | Acc: {mean_test_acc:.4f}')
+                f'Test | NLL Loss: {test_metrics_mean["loss"]:.6f} | Acc: {test_metrics_mean["acc"]:.4f} | MSE: {test_metrics_mean["mse"]}')
             print(f"Took {self.metrics['time_elapsed']} seconds")
-
-
 
             self.save()
             writer.add_graph(self, images)
@@ -202,12 +213,17 @@ class LinearClassifierDSC(Model):
         self.relu_activation = torch.nn.ReLU()
         self.softmax_activation = torch.nn.Softmax(dim=-1)
         self.concat_nodes = 0
-        self.w = torch.nn.Parameter(data=torch.tensor(np.ones([N_TIMESTEPS]), dtype=torch.float32), requires_grad=True)
+        self.edge_weights = []
         for e, node in enumerate(self.config['dnn_config']["layers"]):
             if e == 0:
                 prev_node = config["in_features"]
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
+                self.edge_weights.append(
+                    torch.nn.Parameter(data=torch.tensor(np.ones([prev_node]), dtype=torch.float32),
+                                       requires_grad=True))
+                self.register_parameter(f'w_{e}', self.edge_weights[-1])
+
             self.layers.extend([nn.Linear(prev_node, node)])
 
     def forward(self, x):
@@ -221,9 +237,9 @@ class LinearClassifierDSC(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x))
+                return self.softmax_activation(layer(x * F.sigmoid(self.edge_weights[e])))
             else:
-                x = self.relu_activation(layer(x))
+                x = self.relu_activation(layer(x * F.sigmoid(self.edge_weights[e])))
                 inps.append(x)
 
     def evaluate(self, data):

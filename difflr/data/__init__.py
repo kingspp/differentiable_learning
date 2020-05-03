@@ -83,7 +83,7 @@ class FashionMNISTDataset():
     def __new__(cls, batch_size, use_cuda, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         train_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=False,
+            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True,
                                   transform=transforms.Compose(
                                       [transforms.ToTensor(),
                                        transforms.Normalize((0.5,), (0.5,))])),

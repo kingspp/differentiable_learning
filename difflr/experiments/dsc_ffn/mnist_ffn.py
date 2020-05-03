@@ -6,7 +6,7 @@ from difflr.data import MNISTDataset
 import numpy as np
 import random
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):
     print('Variance: ', np.mean([param.var().item() for param in model.edge_weights]))
@@ -20,7 +20,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'dsc_ffn',
+        'model_name': 'dsc_ffn_50',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 10,

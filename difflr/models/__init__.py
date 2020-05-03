@@ -22,10 +22,10 @@ from difflr import CONFIG
 class Model(nn.Module, metaclass=ABCMeta):
     def __init__(self, name: str, config):
         super().__init__()
-        self.name = config["model_name"] or name
+        self.name =  name
         self.config = config
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.id = self.name + '-' + generate_timestamp()
+        self.id = config['model_name'] + '-' + generate_timestamp()
         self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_PATH, self.name, 'runs', self.id)
         if not CONFIG.DRY_RUN:
             os.system(f'mkdir -p {self.exp_dir}')
@@ -219,7 +219,7 @@ class LinearClassifierGSC(Model):
 
 class LinearClassifierDSC(Model):
     def __init__(self, config):
-        super().__init__(name='gsc_ffn', config=config)
+        super().__init__(name='dsc_ffn', config=config)
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
         self.softmax_activation = torch.nn.Softmax(dim=-1)

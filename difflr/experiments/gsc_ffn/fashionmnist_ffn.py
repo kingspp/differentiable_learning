@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@created on: 5/2/20,
+@created on: 5/3/20,
 @author: Shreesha N,
 @version: v0.0.1
 @system name: badgod
@@ -12,7 +12,7 @@ Description:
 
 import torch
 
-from difflr.models import LinearClassifier
+from difflr.models import LinearClassifierGSC
 from difflr.data import FashionMNISTDataset
 
 
@@ -20,12 +20,12 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_ffn',
+        'model_name': 'gsc_ffn',
+        "num_classes": 10,
         'in_features': 784,
         'epochs': 50,
         'batch_size': 256,
         'lr': 1e-3,
-        'num_classes':10,
         'dnn_config':
             {
 
@@ -33,7 +33,7 @@ def main():
             }
     }
 
-    model = LinearClassifier(config=config)
+    model = LinearClassifierGSC(config=config)
     model.fit(dataset=FashionMNISTDataset)
 
 

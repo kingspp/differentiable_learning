@@ -26,7 +26,7 @@ import torch
 from difflr import CONFIG
 from difflr.models.cnn_models import SimpleCNN
 from difflr.data import FashionMNISTDataset
-from difflr.utils import shape_printer_hook
+from difflr.utils.network_utils import shape_printer_hook
 
 CONFIG.DRY_RUN = False
 

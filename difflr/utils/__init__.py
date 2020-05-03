@@ -6,6 +6,20 @@ import datetime
 import numpy as np
 import torch
 import torch.nn.functional as F
+from prettytable import PrettyTable
+
+def plot_information_transfer(weights, display=True):
+    x = PrettyTable()
+    x.field_names = [f"L_{i} "for i in weights]
+    for e, w in enumerate(weights):
+        x.add_row([e, np.mean(w)])
+
+    if display:
+        print(x)
+    return x
+
+
+        
 
 def mse_score(logits, target, num_classes, reduction=None):
     one_hot_targets = np.eye(num_classes)[target]
@@ -35,25 +49,30 @@ def generate_timestamp() -> str:
 
 # Context manager that copies stdout and any exceptions to a log file
 class Tee(object):
-    def __init__(self, filename):
-        self.file = open(filename, 'w')
+    def __init__(self, filename, io_enabled=True):
+        if io_enabled:
+            self.file = open(filename, 'w')
         self.stdout = sys.stdout
+        self.io_enabled = io_enabled
 
     def __enter__(self):
         sys.stdout = self
 
     def __exit__(self, exc_type, exc_value, tb):
         sys.stdout = self.stdout
-        if exc_type is not None:
-            self.file.write(traceback.format_exc())
-        self.file.close()
+        if self.io_enabled:
+            if exc_type is not None:
+                self.file.write(traceback.format_exc())
+            self.file.close()
 
     def write(self, data):
-        self.file.write(data)
+        if self.io_enabled:
+            self.file.write(data)
         self.stdout.write(data)
 
     def flush(self):
-        self.file.flush()
+        if self.io_enabled:
+            self.file.flush()
         self.stdout.flush()
 
 

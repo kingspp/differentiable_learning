@@ -15,6 +15,8 @@ import json
 from difflr.utils import CustomJsonEncoder, mse_score
 import time
 from torchsummary import summary
+from difflr import CONFIG
+
 
 
 class Model(nn.Module, metaclass=ABCMeta):
@@ -25,7 +27,8 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = self.name + '-' + generate_timestamp()
         self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_PATH, self.name, 'runs', self.id)
-        os.system(f'mkdir -p {self.exp_dir}')
+        if not CONFIG.DRY_RUN:
+            os.system(f'mkdir -p {self.exp_dir}')
         self.metrics = {
             'time_elapsed': '',
             "timestamp": self.id.split('-')[-1],
@@ -51,10 +54,12 @@ class Model(nn.Module, metaclass=ABCMeta):
     def evaluate(self, data):
         pass
 
-    def fit(self, dataset, log_type='epoch', log_interval=1):
-        with Tee(filename=self.exp_dir + '/model.log'):
+    def fit(self, dataset, log_type='epoch', log_interval=1,
+            batch_end_hook=lambda x:x, epoch_end_hook=lambda x:x):
+        with Tee(filename=self.exp_dir + '/model.log', io_enabled=not CONFIG.DRY_RUN):
             print('Config: \n', json.dumps(self.config, indent=2), '\n')
-            writer = SummaryWriter(f'{self.exp_dir}/graphs')
+            if not CONFIG.DRY_RUN:
+                writer = SummaryWriter(f'{self.exp_dir}/graphs')
             self.train()
 
             train_loader, test_loader = dataset(batch_size=self.config['batch_size'],
@@ -85,31 +90,35 @@ class Model(nn.Module, metaclass=ABCMeta):
                     train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))
                     train_metrics['mse'].append(
                         mse_score(logits=output, target=target, num_classes=self.config['num_classes'], reduction='mean').item())
-                    writer.add_scalar(tag='Train/batch/loss', scalar_value=loss.item(), global_step=next(global_step))
-                    writer.add_scalar(tag='Train/batch/accuracy', scalar_value=train_metrics['acc'][-1], global_step=next(global_step))
-                    writer.add_scalar(tag='Train/batch/mse', scalar_value=train_metrics['mse'][-1],
-                                      global_step=next(global_step))
-                    self.metrics['train']['batch']['loss'].append(loss.item())
-                    self.metrics['train']['batch']['accuracy'].append(train_metrics['acc'][-1])
-                    self.metrics['train']['batch']['mse'].append(train_metrics['mse'][-1])
+                    if not CONFIG.DRY_RUN:
+                        writer.add_scalar(tag='Train/batch/loss', scalar_value=loss.item(), global_step=next(global_step))
+                        writer.add_scalar(tag='Train/batch/accuracy', scalar_value=train_metrics['acc'][-1], global_step=next(global_step))
+                        writer.add_scalar(tag='Train/batch/mse', scalar_value=train_metrics['mse'][-1],
+                                          global_step=next(global_step))
+                        self.metrics['train']['batch']['loss'].append(loss.item())
+                        self.metrics['train']['batch']['accuracy'].append(train_metrics['acc'][-1])
+                        self.metrics['train']['batch']['mse'].append(train_metrics['mse'][-1])
 
                     if (log_type == 'batch' and batch_idx % log_interval == 0):
                         print(
                             f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} '
                             f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}\tAcc: '
                             f'{train_metrics["acc"][-1]:.4f}\tMSE: {train_metrics["mse"][-1]:.4f}')
+                    batch_end_hook(self)
                 train_metrics_mean = {k: np.mean(v) for k, v in train_metrics.items()}
                 if (log_type == 'epoch' and epoch % log_interval == 0):
                     print(
                         f'Train Epoch: {epoch} | Loss: {train_metrics_mean["loss"]:.6f} '
                         f'| Acc: {train_metrics_mean["acc"]:.4f}'
                         f'| MSE: {train_metrics_mean["mse"]:.4f}')
-                writer.add_scalar(tag='Train/epoch/loss', scalar_value=train_metrics_mean["loss"], global_step=epoch)
-                writer.add_scalar(tag='Train/epoch/accuracy', scalar_value=train_metrics_mean["acc"], global_step=epoch)
-                writer.add_scalar(tag='Train/epoch/mse', scalar_value=train_metrics_mean["mse"], global_step=epoch)
-                self.metrics['train']['epoch']['loss'].append(train_metrics_mean["loss"])
-                self.metrics['train']['epoch']['accuracy'].append(train_metrics_mean["acc"])
-                self.metrics['train']['epoch']['mse'].append(train_metrics_mean["mse"])
+                if not CONFIG.DRY_RUN:
+                    writer.add_scalar(tag='Train/epoch/loss', scalar_value=train_metrics_mean["loss"], global_step=epoch)
+                    writer.add_scalar(tag='Train/epoch/accuracy', scalar_value=train_metrics_mean["acc"], global_step=epoch)
+                    writer.add_scalar(tag='Train/epoch/mse', scalar_value=train_metrics_mean["mse"], global_step=epoch)
+                    self.metrics['train']['epoch']['loss'].append(train_metrics_mean["loss"])
+                    self.metrics['train']['epoch']['accuracy'].append(train_metrics_mean["acc"])
+                    self.metrics['train']['epoch']['mse'].append(train_metrics_mean["mse"])
+                epoch_end_hook(self)
             self.metrics['time_elapsed'] = time.time() - start_time
 
             # Test
@@ -125,20 +134,22 @@ class Model(nn.Module, metaclass=ABCMeta):
                     mse_score(logits=output, target=target, num_classes=self.config['num_classes'], reduction='sum').item())
 
             test_metrics_mean = {k: np.mean(v) for k, v in test_metrics.items()}
-            writer.add_scalar('Test/loss', test_metrics_mean['loss'])
-            writer.add_scalar('Test/accuracy', test_metrics_mean['acc'])
-            writer.add_scalar('Test/mse', test_metrics_mean['mse'])
-            self.metrics['test']['loss'] = test_metrics_mean['loss']
-            self.metrics['test']['accuracy'] = test_metrics_mean['acc']
-            self.metrics['test']['mse'] = test_metrics_mean['mse']
+            if not CONFIG.DRY_RUN:
+                writer.add_scalar('Test/loss', test_metrics_mean['loss'])
+                writer.add_scalar('Test/accuracy', test_metrics_mean['acc'])
+                writer.add_scalar('Test/mse', test_metrics_mean['mse'])
+                self.metrics['test']['loss'] = test_metrics_mean['loss']
+                self.metrics['test']['accuracy'] = test_metrics_mean['acc']
+                self.metrics['test']['mse'] = test_metrics_mean['mse']
             print(
                 f'Test | NLL Loss: {test_metrics_mean["loss"]:.6f} | Acc: {test_metrics_mean["acc"]:.4f} | MSE: {test_metrics_mean["mse"]}')
             print(f"Took {self.metrics['time_elapsed']} seconds")
 
-            self.save()
-            writer.add_graph(self, images)
-            writer.close()
-            json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
+            if not CONFIG.DRY_RUN:
+                self.save()
+                writer.add_graph(self, images)
+                writer.close()
+                json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
 
     def save(self):
         torch.save(self, f'{self.exp_dir}/{self.name}.ckpt')

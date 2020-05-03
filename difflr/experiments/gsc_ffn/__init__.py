@@ -21,7 +21,8 @@ def main():
     }
 
     model = LinearClassifierGSC(config=config)
-    model.fit(dataset=MNISTDataset)
+    print(model)
+    # model.fit(dataset=MNISTDataset)
 
 
 if __name__ == '__main__':

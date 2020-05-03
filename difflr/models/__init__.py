@@ -59,6 +59,10 @@ class Model(nn.Module, metaclass=ABCMeta):
             dataiter = iter(train_loader)
             images, labels = dataiter.next()
             print('Model: \n')
+            print(self)
+            print("\n")
+
+            print('Summary: \n')
             summary(self, input_size=images.shape[1:])
             print('\n')
             self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
@@ -154,6 +158,44 @@ class LinearClassifier(Model):
 
 
 class LinearClassifierGSC(Model):
+    def __init__(self, config):
+        super().__init__(name='gsc_ffn', config=config)
+        self.layers = nn.ModuleList([])
+        self.relu_activation = torch.nn.ReLU()
+        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.concat_nodes = 0
+        for e, node in enumerate(self.config['dnn_config']["layers"]):
+            if e == 0:
+                prev_node = config["in_features"]
+            else:
+                prev_node += self.config['dnn_config']["layers"][e - 1]
+            self.layers.extend([nn.Linear(prev_node, node)])
+
+    def forward(self, x):
+        inps = []
+        x = x.reshape([x.shape[0], -1])
+        inps.append(x)
+        x = self.relu_activation(self.layers[0](x))
+        inps.append(x)
+        for e, layer in enumerate(self.layers[1:]):
+            x = inps[0]
+            for i in inps[1:]:
+                x = torch.cat((i, x), 1)
+            if e + 1 > len(self.layers) - 2:
+                return self.softmax_activation(layer(x))
+            else:
+                x = self.relu_activation(layer(x))
+                inps.append(x)
+
+    def evaluate(self, data):
+        if not isinstance(data, torch.Tensor):
+            data = torch.tensor(data, dtype=torch.float32)
+        prediction_probabilities = self.forward(data.reshape([-1, self.timesteps]))
+        predicted_value, predicted_class = torch.max(prediction_probabilities, 1)
+        return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()
+
+
+class LinearClassifierDSC(Model):
     def __init__(self, config):
         super().__init__(name='gsc_ffn', config=config)
         self.layers = nn.ModuleList([])

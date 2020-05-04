@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-@created on: 5/2/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
-
 import torch
 
 from difflr.models import LinearClassifier
@@ -20,12 +8,12 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_ffn',
+        'model_name': 'fashion_mnist_simple_ffn',
+        "num_classes": 10,
         'in_features': 784,
-        'epochs': 50,
+        'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-3,
-        'num_classes':10,
+        'lr': 1e-2,
         'dnn_config':
             {
 

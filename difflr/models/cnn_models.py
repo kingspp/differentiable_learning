@@ -68,7 +68,7 @@ class SimpleCNN(Model):
 
 class GSCCNN(Model):
     def __init__(self, config):
-        super().__init__(name='simple_cnn', config=config)
+        super().__init__(name='gsc_cnn', config=config)
         self.conv_layers = nn.ModuleList([])
         self.adaptive_pool_layers = nn.ModuleList([])
         self.linear_layers = nn.ModuleList([])

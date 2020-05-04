@@ -26,7 +26,7 @@ def shape_printer_hook(model: Model, input_shape):
         table.add_row([f'Conv {e}', x.shape])
     x = x.view(-1, x.shape[1:].numel())
     table.add_row([f'Flattened', x.shape])
-    for layer in model.linear_layers:
+    for e, layer in enumerate(model.linear_layers):
         x = layer(x)
         table.add_row([f'Linear {e}', x.shape])
     print(table)

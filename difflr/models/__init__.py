@@ -18,7 +18,6 @@ from torchsummary import summary
 from difflr import CONFIG
 
 
-
 class Model(nn.Module, metaclass=ABCMeta):
     def __init__(self, name: str, config):
         super().__init__()
@@ -55,7 +54,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         pass
 
     def fit(self, dataset, log_type='epoch', log_interval=1,
-            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=lambda x: x):
+            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None):
         with Tee(filename=self.exp_dir + '/model.log', io_enabled=not CONFIG.DRY_RUN):
             print('Config: \n', json.dumps(self.config, indent=2), '\n')
             if not CONFIG.DRY_RUN:
@@ -81,7 +80,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 train_metrics = {'loss': [], 'acc': [], 'mse': []}
                 for batch_idx, (data, target) in enumerate(train_loader):
                     data, target = data.to(self.device), target.to(self.device)
-                    if epoch == 1 and batch_idx == 0:
+                    if epoch == 1 and batch_idx == 0 and shape_printer_hook is not None:
                         shape_printer_hook(self, data[1:].shape)
                     self.optimizer.zero_grad()
                     output = self(data)
@@ -300,8 +299,8 @@ class LinearClassifierDSCPruned(Model):
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
             self.edge_weights.append(
-                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
-                                   requires_grad=True))
+                    torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
+                                       requires_grad=True))
             self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
 
             self.layers.extend([nn.Linear(prev_node, node)])
@@ -317,9 +316,9 @@ class LinearClassifierDSCPruned(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e+1]))))
+                return self.softmax_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1]))))
             else:
-                x = self.relu_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e+1]))))
+                x = self.relu_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1]))))
                 inps.append(x)
 
     def evaluate(self, data):
@@ -328,7 +327,6 @@ class LinearClassifierDSCPruned(Model):
         prediction_probabilities = self.forward(data.reshape([-1, self.timesteps]))
         predicted_value, predicted_class = torch.max(prediction_probabilities, 1)
         return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()
-
 
 
 class CNNClassifier(Model):

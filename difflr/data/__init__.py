@@ -88,10 +88,10 @@ class FashionMNISTDataset():
                                       transform=transforms.Compose(
                                               [transforms.ToTensor(),
                                                transforms.Normalize((0.5,), (0.5,))])),
-                batch_size=batch_size, shuffle=True, **kwargs)
+                batch_size=batch_size, shuffle=False, **kwargs)
         test_loader = torch.utils.data.DataLoader(
                 datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose(
                         [transforms.ToTensor(),
                          transforms.Normalize((0.5,), (0.5,))])),
-                batch_size=batch_size, shuffle=True, **kwargs)
+                batch_size=batch_size, shuffle=False, **kwargs)
         return train_loader, test_loader

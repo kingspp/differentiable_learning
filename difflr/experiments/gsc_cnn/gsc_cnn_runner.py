@@ -10,21 +10,9 @@ Description:
 
 """
 
-# -*- coding: utf-8 -*-
-"""
-@created on: 5/3/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
-
 import torch
 from difflr import CONFIG
-from difflr.models.cnn_models import SimpleCNN
+from difflr.models.cnn_models import GSCCNN
 from difflr.data import FashionMNISTDataset
 from difflr.utils.network_utils import shape_printer_hook
 
@@ -38,7 +26,7 @@ def main():
         'model_name': 'simple_cnn_fashionmnist',
         "num_classes": 10,
         'in_features': [1, 28, 28],
-        'epochs': 20,
+        'epochs': 10,
         'batch_size': 128,
         'lr': 1e-2,
         'dnn_config':
@@ -50,7 +38,7 @@ def main():
             }
     }
 
-    model = SimpleCNN(config=config)
+    model = GSCCNN(config=config)
     model.fit(dataset=FashionMNISTDataset, shape_printer_hook=shape_printer_hook)
 
 

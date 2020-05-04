@@ -23,10 +23,10 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simple_cnn_fashionmnist',
+        'model_name': 'gsc_cnn_fashionmnist',
         "num_classes": 10,
         'in_features': [1, 28, 28],
-        'epochs': 10,
+        'epochs': 20,
         'batch_size': 128,
         'lr': 1e-2,
         'dnn_config':
@@ -39,7 +39,7 @@ def main():
     }
 
     model = GSCCNN(config=config)
-    model.fit(dataset=FashionMNISTDataset, shape_printer_hook=shape_printer_hook)
+    model.fit(dataset=FashionMNISTDataset)  # , shape_printer_hook=shape_printer_hook
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from difflr.utils import generate_timestamp, Tee
 import os
-from difflr import DIFFLR_EXPERIMENTS_PATH
+from difflr import DIFFLR_EXPERIMENTS_RUNS_PATH
 from itertools import count
 import json
 from difflr.utils import CustomJsonEncoder, mse_score
@@ -25,7 +25,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.config = config
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = config['model_name'] + '-' + generate_timestamp()
-        self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_PATH, self.name, 'runs', self.id)
+        self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)
         if not CONFIG.DRY_RUN:
             os.system(f'mkdir -p {self.exp_dir}')
         self.metrics = {

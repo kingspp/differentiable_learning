@@ -14,7 +14,6 @@ import torch
 from difflr import CONFIG
 from difflr.models.cnn_models import GSCCNN
 from difflr.data import FashionMNISTDataset
-from difflr.utils.network_utils import shape_printer_hook
 
 CONFIG.DRY_RUN = False
 
@@ -33,14 +32,14 @@ def main():
             {
                 'kernel_size': [3, 3, 3, 3],
                 'stride': [2, 1, 1, 1],
-                'filters_maps': [32, 64, 128, 32],
-                'linear': [200, 10]
+                'filters_maps': [32, 64, 128, 64],
+                'linear': [300, 10]
             }
     }
 
-    model = GSCCNN(config=config)
-    model.fit(dataset=FashionMNISTDataset)  # , shape_printer_hook=shape_printer_hook
 
+    model = GSCCNN(config=config)
+    model.fit(dataset=FashionMNISTDataset, shape_printer_hook=model.shape_printer_hook)
 
 if __name__ == '__main__':
     main()

@@ -14,11 +14,69 @@ from difflr.models import Model
 import torch.nn as nn
 import torch
 from torch.autograd import Variable
-from torch.nn import functional as F
 import numpy as np
+from prettytable import PrettyTable
 
 
-class SimpleCNN(Model):
+class BaseCNN(Model):
+    def __init__(self, name: str, config):
+        super().__init__(name=name, config=config)
+
+    def _flatten_conv(self, input_shape):
+        for layer in self.conv_layers:
+            input_shape = self._calc_altered_filter_map_size(layer, input_shape)
+            x = self._calc_op_shape(layer, input_shape)
+            input_shape = x  # Update the input shape for the next layer
+        return np.prod(x)
+
+    def _calc_op_shape(self, layer, data_shape):
+        d = torch.rand(1, *data_shape) if len(data_shape) == 3 else torch.rand(*data_shape)
+        return [x for x in layer(d).size()]
+
+    def shape_printer_hook(self, input_shape):
+        """ Pass the instance of Model class and input shape to print the output shapes of each layer of model """
+
+        table = PrettyTable()
+        table.field_names = ['Layer Name', 'Shape']
+        table.add_row(['Input shape', input_shape])
+        x = torch.rand(input_shape)
+        for e, layer in enumerate(self.conv_layers):
+            x = torch.rand(self._calc_altered_filter_map_size(layer, list(x.shape)))
+            table.add_row([f'Conv {e} In', x.shape])
+            x = layer(x)
+            table.add_row([f'Conv {e} Out', x.shape])
+
+        x = x.view(-1, x.shape[1:].numel())
+        table.add_row([f'Flattened', x.shape])
+        for e, layer in enumerate(self.linear_layers):
+            x = layer(x)
+            table.add_row([f'Linear {e}', x.shape])
+        print(table)
+
+    def _calc_altered_filter_map_size(self, layer, input_shape):
+        """
+        Input should be of shape [batch, channels, height, weight]
+        """
+        input_shape[1] = layer.state_dict()['weight'].size()[1]
+        return input_shape
+
+    def _build_conv_global_short_circuit(self):
+        pass
+
+    def _build_linear_layers(self):
+        pass
+
+    def _build_adaptive_avg_pool_layer(self):
+        pass
+
+    def _build_adaptive_max_pool_layer(self):
+        pass
+
+    def _build_conv2d_layer(self):
+        pass
+
+
+class SimpleCNN(BaseCNN):
     def __init__(self, config):
         super().__init__(name='simple_cnn', config=config)
         self.conv_layers = nn.ModuleList([])
@@ -66,7 +124,7 @@ class SimpleCNN(Model):
         pass
 
 
-class GSCCNN(Model):
+class GSCCNN(BaseCNN):
     def __init__(self, config):
         super().__init__(name='gsc_cnn', config=config)
         self.conv_layers = nn.ModuleList([])
@@ -89,7 +147,7 @@ class GSCCNN(Model):
             if e < len(self.config['dnn_config']["filters_maps"]) - 1:
                 layer_ip_shape[-3] = in_channels
                 layer = self.conv_layers[-1]
-                output_shape = self.calc_op_shape(layer, layer_ip_shape)
+                output_shape = self._calc_op_shape(layer, layer_ip_shape)
                 layer_ip_shape = output_shape
                 adaptive_pool_layer = nn.AdaptiveAvgPool2d(output_size=output_shape[-2:])
                 self.adaptive_pool_layers.extend([adaptive_pool_layer])
@@ -157,24 +215,11 @@ class GSCCNN(Model):
     #     x = F.relu(self.fc1(x))
     #     return F.log_softmax(self.fc2(x))
 
-    def _flatten_conv(self, input_shape):
-        for layer in self.conv_layers:
-            input_shape[1] = layer.state_dict()['weight'].size()[1]
-            x = self.calc_op_shape(layer, input_shape)
-            input_shape = x
-        return np.prod(x)
-
     def evaluate(self):
         pass
 
-    def calc_op_shape(self, layer, data_shape):
-        print(layer)
-        print(data_shape)
-        d = torch.rand(1, *data_shape) if len(data_shape) == 3 else torch.rand(*data_shape)
-        return [x for x in layer(d).size()]
 
-
-class DSCCNN(Model):
+class DSCCNN(BaseCNN):
     def __init__(self, config):
         super().__init__(name='dsc_cnn', config=config)
         self.conv_layers = nn.ModuleList([])

@@ -81,7 +81,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 for batch_idx, (data, target) in enumerate(train_loader):
                     data, target = data.to(self.device), target.to(self.device)
                     if epoch == 1 and batch_idx == 0 and shape_printer_hook is not None:
-                        shape_printer_hook(self, data[1:].shape)
+                        self.shape_printer_hook(data[1:].shape)
                     self.optimizer.zero_grad()
                     output = self(data)
                     loss = F.nll_loss(output, target, reduction='mean')

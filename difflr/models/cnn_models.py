@@ -227,6 +227,7 @@ class DSCCNN(BaseCNN):
         self.linear_layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
         self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
+        self.edge_weights = []
         layer_ip_shape = self.config['in_features']
         cum_sum = [self.config['in_features'][0]]
 
@@ -239,10 +240,17 @@ class DSCCNN(BaseCNN):
             kernel_size, stride = self.config['dnn_config']['kernel_size'][e], self.config['dnn_config']['stride'][e]
             conv_layer = nn.Conv2d(in_channels=in_channels, out_channels=maps, kernel_size=kernel_size, stride=stride)
             self.conv_layers.extend([conv_layer])
+
+            self.edge_weights.append(
+                    torch.nn.Parameter(
+                            data=torch.tensor(np.full(shape=[in_channels], fill_value=1), dtype=torch.float32),
+                            requires_grad=True))
+            self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
+
             if e < len(self.config['dnn_config']["filters_maps"]) - 1:
                 layer_ip_shape[-3] = in_channels
                 layer = self.conv_layers[-1]
-                output_shape = self.calc_op_shape(layer, layer_ip_shape)
+                output_shape = self._calc_op_shape(layer, layer_ip_shape)
                 layer_ip_shape = output_shape
                 adaptive_pool_layer = nn.AdaptiveAvgPool2d(output_size=output_shape[-2:])
                 self.adaptive_pool_layers.extend([adaptive_pool_layer])
@@ -263,6 +271,13 @@ class DSCCNN(BaseCNN):
         x = x.reshape(-1, *self.config['in_features'])
         layer_inputs.append(x)
         for e, layer in enumerate(self.conv_layers):
+            # if e == 1:
+            # print('Before', list(x), file=f)
+            # print('Edge weights ', list(torch.sigmoid(self.edge_weights[e])), file=f)
+            # TODO: Test if each filter map is being multiplied with the right edge weight scalar
+            x = (x.view(x.shape[1], -1) * torch.sigmoid(self.edge_weights[e][:, None])).view(x.shape)
+            # print('After ', list(x), file=f)
+            # exit()
             out = self.relu_activation(layer(x))
             if e < len(self.config['dnn_config']["filters_maps"]) - 1:
                 x = torch.cat((out, *to_concat(layer_inputs, self.adaptive_pool_layers[e])), dim=1)
@@ -272,6 +287,9 @@ class DSCCNN(BaseCNN):
         for layer in self.linear_layers[:-1]:
             x = self.relu_activation(layer(x))
         return self.softmax_activation(self.linear_layers[-1](x))
+
+    def evaluate(self):
+        pass
 
     # def __init__(self, config):
     #     super().__init__(name='simple_cnn', config=config)
@@ -309,19 +327,3 @@ class DSCCNN(BaseCNN):
     #     x = x.view(-1, x.shape[1:].numel())
     #     x = F.relu(self.fc1(x))
     #     return F.log_softmax(self.fc2(x))
-
-    def _flatten_conv(self, input_shape):
-        for layer in self.conv_layers:
-            input_shape[1] = layer.state_dict()['weight'].size()[1]
-            x = self.calc_op_shape(layer, input_shape)
-            input_shape = x
-        return np.prod(x)
-
-    def evaluate(self):
-        pass
-
-    def calc_op_shape(self, layer, data_shape):
-        print(layer)
-        print(data_shape)
-        d = torch.rand(1, *data_shape) if len(data_shape) == 3 else torch.rand(*data_shape)
-        return [x for x in layer(d).size()]

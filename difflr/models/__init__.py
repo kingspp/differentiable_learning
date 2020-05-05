@@ -132,7 +132,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             for batch_idx, (data, target) in enumerate(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self(data)
-                loss = F.nll_loss(output, target, reduction='sum')
+                loss = F.nll_loss(output, target, reduction='mean')
                 test_metrics['loss'].append(loss.item())
                 loss.backward()
                 test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))

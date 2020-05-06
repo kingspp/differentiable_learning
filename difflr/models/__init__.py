@@ -25,7 +25,10 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.config = config
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = config['model_name'] + '-' + generate_timestamp()
-        self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)
+        if 'exp_dir' not in self.config:
+            self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)
+        else:
+            self.exp_dir = os.path.join(self.config['exp_dir'], self.id)
         if not CONFIG.DRY_RUN:
             os.system(f'mkdir -p {self.exp_dir}')
         self.metrics = {
@@ -49,10 +52,10 @@ class Model(nn.Module, metaclass=ABCMeta):
             }
         }
         if 'train_p' not in self.config:
-            self.config['train_p']=100
+            self.config['train_p'] = 100
 
         if 'test_p' not in self.config:
-            self.config['test_p']=100
+            self.config['test_p'] = 100
 
     @abstractmethod
     def evaluate(self, data):
@@ -353,7 +356,7 @@ class CNNClassifier(Model):
         x = x.reshape([x.shape[0], -1])
         for layer in self.layers[:-1]:
             x = self.relu_activation(layer(x))
-        x= self.layers[-1](x)
+        x = self.layers[-1](x)
         return x, self.softmax_activation(x)
 
     def evaluate(self, data):

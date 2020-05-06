@@ -1,31 +1,21 @@
-# -*- coding: utf-8 -*-
-"""
-@created on: 5/3/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
-
 import torch
 
 from difflr.models import LinearClassifierGSC
 from difflr.data import FashionMNISTDataset
+from difflr import CONFIG
 
+CONFIG.DRY_RUN = False
 
 def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'gsc_ffn',
+        'model_name': 'fashion_mnist_gsc_ffn',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 50,
+        'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-3,
+        'lr': 1e-2,
         'dnn_config':
             {
 

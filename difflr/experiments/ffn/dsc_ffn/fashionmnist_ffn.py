@@ -6,7 +6,7 @@ from difflr.data import FashionMNISTDataset
 import numpy as np
 import random
 
-CONFIG.DRY_RUN = False
+CONFIG.DRY_RUN = True
 
 def epoch_end_hook(model:LinearClassifierDSC):
     edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
@@ -18,16 +18,18 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'fashion_mnist_dsc_ffn',
+        'model_name': 'fashion_mnist_dsc_ffn_10p',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 10,
+        'epochs': 100,
         'batch_size': 256,
-        'lr': 1e-2,
+        'lr': 1e-1,
+        "train_p": 10,
+        "test_p": 100,
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [1, 1, 10]
             }
     }
 

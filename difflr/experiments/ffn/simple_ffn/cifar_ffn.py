@@ -1,31 +1,30 @@
 import torch
-from difflr import CONFIG
-from difflr.models import LinearClassifier
-from difflr.data import FashionMNISTDataset
 
-CONFIG.DRY_RUN = True
+from difflr.models import LinearClassifier
+from difflr.data import CIFARDataset
+
 
 def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'fashion_mnist_simple_ffn',
+        'model_name': 'cifar_simple_ffn',
         "num_classes": 10,
-        'in_features': 784,
-        'epochs': 100,
+        'in_features': 32*32,
+        'epochs': 10,
         'batch_size': 256,
         'lr': 1e-2,
-        "train_p": 10,
-        "test_p": 100,
+        "train_p":100,
+        "test_p":100,
         'dnn_config':
             {
 
-                'layers': [25, 20, 10]
+                'layers': [100, 50, 10]
             }
     }
 
     model = LinearClassifier(config=config)
-    model.fit(dataset=FashionMNISTDataset)
+    model.fit(dataset=CIFARDataset)
 
 
 if __name__ == '__main__':

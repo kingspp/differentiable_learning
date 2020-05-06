@@ -106,7 +106,8 @@ class SimpleCNN(BaseCNN):
         x = x.view(-1, x.shape[1:].numel())
         for layer in self.linear_layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.linear_layers[-1](x))
+        x = self.linear_layers[-1](x)
+        return x , self.softmax_activation(x)
 
     def _flatten_conv(self, input_shape):
         bs = 1
@@ -176,7 +177,8 @@ class GSCCNN(BaseCNN):
         x = x.view(-1, x.shape[1:].numel())
         for layer in self.linear_layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.linear_layers[-1](x))
+        x = self.linear_layers[-1](x)
+        return x, self.softmax_activation(x)
 
     # def __init__(self, config):
     #     super().__init__(name='simple_cnn', config=config)
@@ -286,7 +288,8 @@ class DSCCNN(BaseCNN):
         x = x.view(-1, x.shape[1:].numel())
         for layer in self.linear_layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.linear_layers[-1](x))
+        x = self.linear_layers[-1](x)
+        return x, self.softmax_activation(x)
 
     def evaluate(self):
         pass

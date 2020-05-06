@@ -48,6 +48,11 @@ class Model(nn.Module, metaclass=ABCMeta):
                 'mse': []
             }
         }
+        if 'train_p' not in self.config:
+            self.config['train_p']=100
+
+        if 'test_p' not in self.config:
+            self.config['test_p']=100
 
     @abstractmethod
     def evaluate(self, data):
@@ -61,7 +66,8 @@ class Model(nn.Module, metaclass=ABCMeta):
                 writer = SummaryWriter(f'{self.exp_dir}/graphs')
             self.train()
 
-            train_loader, test_loader = dataset(batch_size=self.config['batch_size'],
+            train_loader, test_loader = dataset(batch_size=self.config['batch_size'], train_p=self.config['train_p'],
+                                                test_p=self.config['test_p'],
                                                 use_cuda=True if self.device == 'cuda' else False)
             dataiter = iter(train_loader)
             images, labels = dataiter.next()
@@ -83,38 +89,38 @@ class Model(nn.Module, metaclass=ABCMeta):
                     if epoch == 1 and batch_idx == 0 and shape_printer_hook is not None:
                         self.shape_printer_hook(data[1:].shape)
                     self.optimizer.zero_grad()
-                    output = self(data)
-                    loss = F.nll_loss(output, target, reduction='mean')
+                    raw, logits = self(data)
+                    loss = F.nll_loss(logits, target, reduction='mean')
                     train_metrics['loss'].append(loss.item())
                     loss.backward()
                     self.optimizer.step()
-                    train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))
+                    train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
                     train_metrics['mse'].append(
-                            mse_score(logits=output, target=target, num_classes=self.config['num_classes'],
-                                      reduction='mean').item())
+                        mse_score(logits=logits, target=target, num_classes=self.config['num_classes'],
+                                  reduction='mean').item())
                     if not CONFIG.DRY_RUN:
-                        writer.add_scalar(tag='Train/batch/loss', scalar_value=loss.item(),
+                        writer.add_scalar(tag='Train/batch/loss', scalar_value=train_metrics['loss'][-1],
                                           global_step=next(global_step))
                         writer.add_scalar(tag='Train/batch/accuracy', scalar_value=train_metrics['acc'][-1],
                                           global_step=next(global_step))
                         writer.add_scalar(tag='Train/batch/mse', scalar_value=train_metrics['mse'][-1],
                                           global_step=next(global_step))
-                        self.metrics['train']['batch']['loss'].append(loss.item())
+                        self.metrics['train']['batch']['loss'].append(train_metrics['loss'][-1])
                         self.metrics['train']['batch']['accuracy'].append(train_metrics['acc'][-1])
                         self.metrics['train']['batch']['mse'].append(train_metrics['mse'][-1])
 
                     if (log_type == 'batch' and batch_idx % log_interval == 0):
                         print(
-                                f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} '
-                                f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}\tAcc: '
-                                f'{train_metrics["acc"][-1]:.4f}\tMSE: {train_metrics["mse"][-1]:.4f}')
+                            f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} '
+                            f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {train_metrics["loss"][-1]:.6f}\tAcc: '
+                            f'{train_metrics["acc"][-1]:.4f}\tMSE: {train_metrics["mse"][-1]:.4f}')
                     batch_end_hook(self)
                 train_metrics_mean = {k: np.mean(v) for k, v in train_metrics.items()}
                 if (log_type == 'epoch' and epoch % log_interval == 0):
                     print(
-                            f'Train Epoch: {epoch} | Loss: {train_metrics_mean["loss"]:.6f} '
-                            f'| Acc: {train_metrics_mean["acc"]:.4f}'
-                            f'| MSE: {train_metrics_mean["mse"]:.4f}')
+                        f'Train Epoch: {epoch} | Loss: {train_metrics_mean["loss"]:.6f} '
+                        f'| Acc: {train_metrics_mean["acc"]:.4f}'
+                        f'| MSE: {train_metrics_mean["mse"]:.4f}')
                 if not CONFIG.DRY_RUN:
                     writer.add_scalar(tag='Train/epoch/loss', scalar_value=train_metrics_mean["loss"],
                                       global_step=epoch)
@@ -131,14 +137,14 @@ class Model(nn.Module, metaclass=ABCMeta):
             test_metrics = {'loss': [], 'acc': [], 'mse': []}
             for batch_idx, (data, target) in enumerate(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
-                output = self(data)
-                loss = F.nll_loss(output, target, reduction='mean')
-                test_metrics['loss'].append(loss.item())
+                raw, logits = self(data)
+                loss = F.nll_loss(logits, target, reduction='mean')
+                test_metrics['loss'].append(F.nll_loss(F.log_softmax(raw, dim=1), target, reduction='mean').item())
                 loss.backward()
-                test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(output, axis=1).indices))
+                test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
                 test_metrics['mse'].append(
-                        mse_score(logits=output, target=target, num_classes=self.config['num_classes'],
-                                  reduction='sum').item())
+                    mse_score(logits=logits, target=target, num_classes=self.config['num_classes'],
+                              reduction='mean').item())
 
             test_metrics_mean = {k: np.mean(v) for k, v in test_metrics.items()}
             if not CONFIG.DRY_RUN:
@@ -149,7 +155,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.metrics['test']['accuracy'] = test_metrics_mean['acc']
                 self.metrics['test']['mse'] = test_metrics_mean['mse']
             print(
-                    f'Test | NLL Loss: {test_metrics_mean["loss"]:.6f} | Acc: {test_metrics_mean["acc"]:.4f} | MSE: {test_metrics_mean["mse"]}')
+                f'Test | NLL Loss: {test_metrics_mean["loss"]:.6f} | Acc: {test_metrics_mean["acc"]:.4f} | MSE: {test_metrics_mean["mse"]}')
             print(f"Took {self.metrics['time_elapsed']} seconds")
 
             if not CONFIG.DRY_RUN:
@@ -167,7 +173,7 @@ class LinearClassifier(Model):
         super().__init__(name='simple_ffn', config=config)
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
-        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
         for e, node in enumerate(self.config['dnn_config']["layers"]):
             prev_node = config["in_features"] if e == 0 else self.config['dnn_config']["layers"][e - 1]
             self.layers.extend([nn.Linear(prev_node, node)])
@@ -176,7 +182,8 @@ class LinearClassifier(Model):
         x = x.reshape([x.shape[0], -1])
         for layer in self.layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.layers[-1](x))
+        x = self.layers[-1](x)
+        return x, self.softmax_activation(x)
 
     def evaluate(self, data):
         if not isinstance(data, torch.Tensor):
@@ -211,7 +218,8 @@ class LinearClassifierGSC(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x))
+                x = layer(x)
+                return x, self.softmax_activation(x)
             else:
                 x = self.relu_activation(layer(x))
                 inps.append(x)
@@ -229,7 +237,7 @@ class LinearClassifierDSC(Model):
         super().__init__(name='dsc_ffn', config=config)
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
-        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
         self.concat_nodes = 0
         self.edge_weights = []
         for e, node in enumerate(self.config['dnn_config']["layers"]):
@@ -238,8 +246,8 @@ class LinearClassifierDSC(Model):
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
             self.edge_weights.append(
-                    torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
-                                       requires_grad=True))
+                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
+                                   requires_grad=True))
             self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
 
             self.layers.extend([nn.Linear(prev_node, node)])
@@ -255,7 +263,8 @@ class LinearClassifierDSC(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x * torch.sigmoid(self.edge_weights[e + 1])))
+                return layer(x * torch.sigmoid(self.edge_weights[e + 1])), self.softmax_activation(
+                    layer(x * torch.sigmoid(self.edge_weights[e + 1])))
             else:
                 x = self.relu_activation(layer(x * torch.sigmoid(self.edge_weights[e + 1])))
                 inps.append(x)
@@ -289,7 +298,7 @@ class LinearClassifierDSCPruned(Model):
         super().__init__(name='dsc_ffn_pruned', config=config)
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
-        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
         self.concat_nodes = 0
         self.edge_weights = []
         self.binarize = Binarize.apply
@@ -299,8 +308,8 @@ class LinearClassifierDSCPruned(Model):
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
             self.edge_weights.append(
-                    torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
-                                       requires_grad=True))
+                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
+                                   requires_grad=True))
             self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
 
             self.layers.extend([nn.Linear(prev_node, node)])
@@ -316,7 +325,8 @@ class LinearClassifierDSCPruned(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return self.softmax_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1]))))
+                l = layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1])))
+                return l, self.softmax_activation(l)
             else:
                 x = self.relu_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1]))))
                 inps.append(x)
@@ -343,7 +353,8 @@ class CNNClassifier(Model):
         x = x.reshape([x.shape[0], -1])
         for layer in self.layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.layers[-1](x))
+        x= self.layers[-1](x)
+        return x, self.softmax_activation(x)
 
     def evaluate(self, data):
         if not isinstance(data, torch.Tensor):

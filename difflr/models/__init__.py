@@ -82,7 +82,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 for batch_idx, (data, target) in enumerate(train_loader):
                     data, target = data.to(self.device), target.to(self.device)
                     if epoch == 1 and batch_idx == 0 and shape_printer_hook is not None:
-                        shape_printer_hook(self, data[1:].shape)
+                        self.shape_printer_hook(data[1:].shape)
                     self.optimizer.zero_grad()
                     raw, logits = self(data)
                     loss = F.nll_loss(logits, target, reduction='mean')
@@ -133,7 +133,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             for batch_idx, (data, target) in enumerate(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 raw, logits = self(data)
-                loss = F.nll_loss(logits, target, reduction='sum')
+                loss = F.nll_loss(logits, target, reduction='mean')
                 test_metrics['loss'].append(F.nll_loss(F.log_softmax(raw, dim=1), target, reduction='mean').item())
                 loss.backward()
                 test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))

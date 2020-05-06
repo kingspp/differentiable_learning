@@ -1,0 +1,10 @@
+futures
+torchvision==0.5.0
+torch==1.4.0
+tqdm==4.42.1
+munch==2.5.0
+numpy==1.18.1
+prettytable==0.7.2
+scikit_learn==0.22.2.post1
+torchsummary==1.5.1
+tensorboard==1.14.0

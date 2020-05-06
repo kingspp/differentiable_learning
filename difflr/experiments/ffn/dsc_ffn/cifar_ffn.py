@@ -1,6 +1,6 @@
 import torch
 
-from difflr.models import LinearClassifier
+from difflr.models import LinearClassifierDSC
 from difflr.data import CIFARDataset
 
 
@@ -8,8 +8,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'cifar_simple_ffn',
-        "exp_dir":"/tmp/difflr",
+        'model_name': 'cifar_dsc',
         "num_classes": 10,
         'in_features': 32*32,
         'epochs': 10,
@@ -24,7 +23,7 @@ def main():
             }
     }
 
-    model = LinearClassifier(config=config)
+    model = LinearClassifierDSC(config=config)
     model.fit(dataset=CIFARDataset)
 
 

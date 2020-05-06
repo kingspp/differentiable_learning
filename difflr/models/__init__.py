@@ -48,6 +48,11 @@ class Model(nn.Module, metaclass=ABCMeta):
                 'mse': []
             }
         }
+        if 'train_p' not in self.config:
+            self.config['train_p']=100
+
+        if 'test_p' not in self.config:
+            self.config['test_p']=100
 
     @abstractmethod
     def evaluate(self, data):
@@ -177,7 +182,8 @@ class LinearClassifier(Model):
         x = x.reshape([x.shape[0], -1])
         for layer in self.layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.layers[-1](x), self.softmax_activation(self.layers[-1](x))
+        x = self.layers[-1](x)
+        return x, self.softmax_activation(x)
 
     def evaluate(self, data):
         if not isinstance(data, torch.Tensor):
@@ -212,7 +218,8 @@ class LinearClassifierGSC(Model):
             for i in inps[1:]:
                 x = torch.cat((i, x), 1)
             if e + 1 > len(self.layers) - 2:
-                return layer(x), self.softmax_activation(layer(x))
+                x = layer(x)
+                return x, self.softmax_activation(x)
             else:
                 x = self.relu_activation(layer(x))
                 inps.append(x)
@@ -346,7 +353,8 @@ class CNNClassifier(Model):
         x = x.reshape([x.shape[0], -1])
         for layer in self.layers[:-1]:
             x = self.relu_activation(layer(x))
-        return self.softmax_activation(self.layers[-1](x))
+        x= self.layers[-1](x)
+        return x, self.softmax_activation(x)
 
     def evaluate(self, data):
         if not isinstance(data, torch.Tensor):

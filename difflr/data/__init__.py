@@ -62,51 +62,58 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class MNISTDataset():
-    def __new__(cls, batch_size, use_cuda, *args, **kwargs):
+    def __new__(cls, batch_size=32, use_cuda=False, train_p=100, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+        TRAIN_SAMPLES = int((60000 * train_p) / 100)
+        TEST_SAMPLES = int((10000 * test_p) / 100)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        print(
+            f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=False,
-                           transform=transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize((0.1307,), (0.3081,))
-                           ])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+            datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=False, transform=transform),
+            batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,))
-            ])),
-            batch_size=batch_size, shuffle=True, **kwargs)
+            datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transform),
+            batch_size=batch_size, **kwargs)
         return train_loader, test_loader
 
 
 class FashionMNISTDataset():
-    def __new__(cls, batch_size, use_cuda, *args, **kwargs):
+    def __new__(cls, batch_size, use_cuda, train_p=100, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
+        TRAIN_SAMPLES = int((60000 * train_p) / 100)
+        TEST_SAMPLES = int((10000 * test_p) / 100)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        print(
+            f"FashionMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
         train_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True,
-                                  transform=transforms.Compose(
-                                      [transforms.ToTensor(),
-                                       transforms.Normalize((0.5,), (0.5,))])),
-            batch_size=batch_size, shuffle=False, **kwargs)  # , sampler=SubsetRandomSampler(range(0, 100))
+            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
+            batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transforms.Compose(
-                [transforms.ToTensor(),
-                 transforms.Normalize((0.5,), (0.5,))])),
-            batch_size=batch_size, shuffle=False, **kwargs)  # , sampler=SubsetRandomSampler(range(0, 100))
+            datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transform),
+            batch_size=batch_size, sampler=test_sampler, **kwargs)
         return train_loader, test_loader
 
 
 class CIFARDataset():
-    def __new__(cls, batch_size, use_cuda, *args, **kwargs):
+    def __new__(cls, batch_size, use_cuda, train_p=100, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            [transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),
+             transforms.Normalize((0.5,), (0.5,))])
+        TRAIN_SAMPLES = int((50000 * train_p) / 100)
+        TEST_SAMPLES = int((10000 * test_p) / 100)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        print(
+            f"FashionMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
             datasets.CIFAR10(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
-            batch_size=batch_size, shuffle=False, **kwargs)  # , sampler=SubsetRandomSampler(range(0, 100))
+            batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(datasets.CIFAR10(DIFFLR_DATA_PATH, train=False, transform=transform),
-                                                  batch_size=batch_size, shuffle=False,
-                                                  **kwargs)  # , sampler=SubsetRandomSampler(range(0, 100))
+                                                  batch_size=batch_size, shuffle=False, **kwargs)
         return train_loader, test_loader

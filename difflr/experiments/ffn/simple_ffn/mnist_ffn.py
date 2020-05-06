@@ -4,7 +4,7 @@ from difflr.models import LinearClassifier
 from difflr.data import MNISTDataset
 from difflr import CONFIG
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def main():
     torch.manual_seed(0)
@@ -15,8 +15,8 @@ def main():
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-2,
-        "train_p":0.10,
+        'lr': 1e-3,
+        "train_p":100,
         "test_p":100,
         'dnn_config':
             {

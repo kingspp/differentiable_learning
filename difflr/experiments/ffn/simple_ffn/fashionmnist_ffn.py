@@ -3,7 +3,7 @@ from difflr import CONFIG
 from difflr.models import LinearClassifier
 from difflr.data import FashionMNISTDataset
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def main():
     torch.manual_seed(0)
@@ -12,15 +12,15 @@ def main():
         'model_name': 'fashion_mnist_simple_ffn',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 100,
+        'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-2,
+        'lr': 1e-1,
         "train_p": 10,
         "test_p": 100,
         'dnn_config':
             {
 
-                'layers': [25, 20, 10]
+                'layers': [100, 50, 10]
             }
     }
 

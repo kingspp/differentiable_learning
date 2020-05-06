@@ -30,7 +30,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         else:
             self.exp_dir = os.path.join(self.config['exp_dir'], self.id)
         if not CONFIG.DRY_RUN:
-            os.system(f'mkdir -p {self.exp_dir}')
+            os.system(f'mkdir -p "{self.exp_dir}"')
         self.metrics = {
             'time_elapsed': '',
             "timestamp": self.id.split('-')[-1],

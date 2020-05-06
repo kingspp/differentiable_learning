@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="difflr",  # Replace with your own username
-    version="0.0.1",
+    version="0.0.2",
     author="kingspp",
     author_email="kingspprathyush@gmail.com",
     description="Differentiable Learning",

@@ -22,7 +22,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'gsc_cnn_fashionmnist_10p_5ep',
+        'model_name': 'gsc_cnn_fashionmnist_10p_params_5ep_10p_data',
         "num_classes": 10,
         'in_features': [1, 28, 28],
         'epochs': 5,
@@ -34,12 +34,14 @@ def main():
                 'stride': [2, 1, 1, 1],
                 'filters_maps': [3, 6, 12, 6],
                 'linear': [300, 10]
-            }
+            },
+        'train_p': 10,
+        'test_p': 100,
     }
-
 
     model = GSCCNN(config=config)
     model.fit(dataset=FashionMNISTDataset, shape_printer_hook=model.shape_printer_hook)
+
 
 if __name__ == '__main__':
     main()

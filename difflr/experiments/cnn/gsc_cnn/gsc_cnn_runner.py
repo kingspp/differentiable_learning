@@ -25,7 +25,7 @@ def main():
         'model_name': 'gsc_cnn_fashionmnist_10p_5ep',
         "num_classes": 10,
         'in_features': [1, 28, 28],
-        'epochs': 20,
+        'epochs': 5,
         'batch_size': 128,
         'lr': 1e-2,
         'dnn_config':

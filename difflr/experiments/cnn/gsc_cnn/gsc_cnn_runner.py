@@ -22,7 +22,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'gsc_cnn_fashionmnist',
+        'model_name': 'gsc_cnn_fashionmnist_10p',
         "num_classes": 10,
         'in_features': [1, 28, 28],
         'epochs': 20,
@@ -32,7 +32,7 @@ def main():
             {
                 'kernel_size': [3, 3, 3, 3],
                 'stride': [2, 1, 1, 1],
-                'filters_maps': [32, 64, 128, 64],
+                'filters_maps': [3, 6, 12, 6],
                 'linear': [300, 10]
             }
     }

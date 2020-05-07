@@ -99,7 +99,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                     self.optimizer.step()
                     train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
                     train_metrics['mse'].append(
-                        mse_score(logits=logits, target=target, num_classes=self.config['num_classes'],
+                        mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                                   reduction='mean').item())
                     if not CONFIG.DRY_RUN:
                         writer.add_scalar(tag='Train/batch/loss', scalar_value=train_metrics['loss'][-1],
@@ -249,7 +249,7 @@ class LinearClassifierDSC(Model):
             else:
                 prev_node += self.config['dnn_config']["layers"][e - 1]
             self.edge_weights.append(
-                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
+                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=0), dtype=torch.float32),
                                    requires_grad=True))
             self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
 

@@ -6,11 +6,11 @@ from difflr.data import MNISTDataset
 import numpy as np
 import random
 
-CONFIG.DRY_RUN = True
+CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):
     edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
-    # plot_information_transfer(model, edge_weights)
+    plot_information_transfer(model, edge_weights)
 
 
 
@@ -18,18 +18,18 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'dsc_ffn_10p',
+        'model_name': 'mnist_dsc_ffn_100p_tanh_Train',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-2,
-        "train_p":0.10,
+        'lr': 1e-3,
+        "train_p":100,
         "test_p":100,
         'dnn_config':
             {
 
-                'layers': [10, 10, 10]
+                'layers': [100, 50, 10]
             },
 
     }

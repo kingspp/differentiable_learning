@@ -34,7 +34,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'dsc_cnn_fashionmnist_10p_params_5ep_10p_data',
+        'model_name': 'dsc_cnn_fashionmnist_10p_params_5ep_10p_data_adaptivemaxpool',
         "num_classes": 10,
         'in_features': [1, 28, 28],
         'epochs': 5,

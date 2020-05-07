@@ -150,7 +150,7 @@ class GSCCNN(BaseCNN):
                 layer = self.conv_layers[-1]
                 output_shape = self._calc_op_shape(layer, layer_ip_shape)
                 layer_ip_shape = output_shape
-                adaptive_pool_layer = nn.AdaptiveAvgPool2d(output_size=output_shape[-2:])
+                adaptive_pool_layer = nn.AdaptiveMaxPool2d(output_size=output_shape[-2:])
                 self.adaptive_pool_layers.extend([adaptive_pool_layer])
 
         # Dynamically calculate the size of flattened layer
@@ -254,7 +254,7 @@ class DSCCNN(BaseCNN):
                 layer = self.conv_layers[-1]
                 output_shape = self._calc_op_shape(layer, layer_ip_shape)
                 layer_ip_shape = output_shape
-                adaptive_pool_layer = nn.AdaptiveAvgPool2d(output_size=output_shape[-2:])
+                adaptive_pool_layer = nn.AdaptiveMaxPool2d(output_size=output_shape[-2:])
                 self.adaptive_pool_layers.extend([adaptive_pool_layer])
 
         # Dynamically calculate the size of flattened layer

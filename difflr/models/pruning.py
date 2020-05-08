@@ -178,7 +178,6 @@ if __name__ == '__main__':
         "lr_decay":1,
         "train_p": 10,
         "test_p": 100,
-
         'dnn_config':
             {
 

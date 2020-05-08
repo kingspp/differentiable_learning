@@ -34,6 +34,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.metrics = {
             'time_elapsed': '',
             "timestamp": self.id.split('-')[-1],
+            "config":self.config,
             'train': {
                 'batch': {
                     'loss': [],
@@ -171,6 +172,8 @@ class Model(nn.Module, metaclass=ABCMeta):
                 writer.add_graph(self, images)
                 writer.close()
                 json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
+
+        return self.metrics
 
     def save(self):
         torch.save(self, f'{self.exp_dir}/{self.name}.ckpt')

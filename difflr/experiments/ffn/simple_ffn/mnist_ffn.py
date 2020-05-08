@@ -16,12 +16,13 @@ def main():
         'epochs': 10,
         'batch_size': 256,
         'lr': 1e-3,
-        "train_p":100,
+        'lr_decay':False,
+        "train_p":10,
         "test_p":100,
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [40, 25, 10]
             }
     }
 

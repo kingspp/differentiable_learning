@@ -28,7 +28,3 @@ class Config(Munch, metaclass=Singleton):
 
 CONFIG = Config()
 CONFIG.DRY_RUN = False
-
-    
-    
-    

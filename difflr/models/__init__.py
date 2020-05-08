@@ -83,6 +83,9 @@ class Model(nn.Module, metaclass=ABCMeta):
             print('\n')
             self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
 
+            if self.config["lr_decay"] is not False:
+                self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.config['lr_decay'])
+
             global_step = count()
             start_time = time.time()
             for epoch in tqdm.tqdm(range(1, self.config['epochs'] + 1)):
@@ -95,11 +98,12 @@ class Model(nn.Module, metaclass=ABCMeta):
                     raw, logits = self(data)
                     loss = F.nll_loss(logits, target, reduction='mean')
                     train_metrics['loss'].append(loss.item())
-                    loss.backward()
+                    loss.backward(retain_graph=True)
                     self.optimizer.step()
                     train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
                     train_metrics['mse'].append(
-                        mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
+                        mse_score(logits=torch.softmax(raw, dim=1), target=target,
+                                  num_classes=self.config['num_classes'],
                                   reduction='mean').item())
                     if not CONFIG.DRY_RUN:
                         writer.add_scalar(tag='Train/batch/loss', scalar_value=train_metrics['loss'][-1],
@@ -134,6 +138,8 @@ class Model(nn.Module, metaclass=ABCMeta):
                     self.metrics['train']['epoch']['accuracy'].append(train_metrics_mean["acc"])
                     self.metrics['train']['epoch']['mse'].append(train_metrics_mean["mse"])
                 epoch_end_hook(self)
+                if self.config["lr_decay"] is not False:
+                    self.lr_scheduler.step(epoch=epoch)
             self.metrics['time_elapsed'] = time.time() - start_time
 
             # Test
@@ -142,11 +148,10 @@ class Model(nn.Module, metaclass=ABCMeta):
                 data, target = data.to(self.device), target.to(self.device)
                 raw, logits = self(data)
                 loss = F.nll_loss(logits, target, reduction='mean')
-                test_metrics['loss'].append(F.nll_loss(F.log_softmax(raw, dim=1), target, reduction='mean').item())
-                loss.backward()
+                test_metrics['loss'].append(loss.item())
                 test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
                 test_metrics['mse'].append(
-                    mse_score(logits=logits, target=target, num_classes=self.config['num_classes'],
+                    mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                               reduction='mean').item())
 
             test_metrics_mean = {k: np.mean(v) for k, v in test_metrics.items()}
@@ -270,68 +275,6 @@ class LinearClassifierDSC(Model):
                     layer(x * torch.sigmoid(self.edge_weights[e + 1])))
             else:
                 x = self.relu_activation(layer(x * torch.sigmoid(self.edge_weights[e + 1])))
-                inps.append(x)
-
-    def evaluate(self, data):
-        if not isinstance(data, torch.Tensor):
-            data = torch.tensor(data, dtype=torch.float32)
-        prediction_probabilities = self.forward(data.reshape([-1, self.timesteps]))
-        predicted_value, predicted_class = torch.max(prediction_probabilities, 1)
-        return predicted_value.detach().numpy(), predicted_class.detach().numpy(), prediction_probabilities.detach().numpy()
-
-
-class Binarize(torch.autograd.Function):
-    """Custom rounding of PyTorch tensors
-    Differentiable binarization with straight-through gradient estimation.
-    """
-
-    @staticmethod
-    def forward(ctx, x):
-        # print(x.round())
-        return x.round()
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        # print(sum(grad_output))
-        return grad_output
-
-
-class LinearClassifierDSCPruned(Model):
-    def __init__(self, config):
-        super().__init__(name='dsc_ffn_pruned', config=config)
-        self.layers = nn.ModuleList([])
-        self.relu_activation = torch.nn.ReLU()
-        self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
-        self.concat_nodes = 0
-        self.edge_weights = []
-        self.binarize = Binarize.apply
-        for e, node in enumerate(self.config['dnn_config']["layers"]):
-            if e == 0:
-                prev_node = config["in_features"]
-            else:
-                prev_node += self.config['dnn_config']["layers"][e - 1]
-            self.edge_weights.append(
-                torch.nn.Parameter(data=torch.tensor(np.full(shape=[prev_node], fill_value=1), dtype=torch.float32),
-                                   requires_grad=True))
-            self.register_parameter(f'edge-weights-{e}', self.edge_weights[-1])
-
-            self.layers.extend([nn.Linear(prev_node, node)])
-
-    def forward(self, x):
-        inps = []
-        x = x.reshape([x.shape[0], -1])
-        inps.append(x)
-        x = self.relu_activation(self.layers[0](x * self.binarize(torch.sigmoid(self.edge_weights[0]))))
-        inps.append(x)
-        for e, layer in enumerate(self.layers[1:]):
-            x = inps[0]
-            for i in inps[1:]:
-                x = torch.cat((i, x), 1)
-            if e + 1 > len(self.layers) - 2:
-                l = layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1])))
-                return l, self.softmax_activation(l)
-            else:
-                x = self.relu_activation(layer(x * self.binarize(torch.sigmoid(self.edge_weights[e + 1]))))
                 inps.append(x)
 
     def evaluate(self, data):

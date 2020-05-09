@@ -25,7 +25,7 @@ def main():
          'dnn_config':
              {
 
-                 'layers': [40, 25, 10]
+                 'layers': [10, 5, 10]
              }
      }
 

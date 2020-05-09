@@ -6,7 +6,6 @@ from difflr import DIFFLR_EXPERIMENTS_RUNS_PATH
 import torch
 from itertools import product, count
 
-
 class Tuner():
     def __init__(self, config, model):
         self.config = config
@@ -15,13 +14,13 @@ class Tuner():
         self.timestamp = generate_timestamp()
         self.global_counter = 0
 
-    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100):
+    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, total_train_samples=60000, data_per=100):
         with Tee(filename=DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.log'):
             kf = KFold(n_splits=cv_split)
-            data_splits = kf.split(list(range(int(data_per * 60000 / 100))))
+            data_splits = kf.split(list(range(int(data_per * total_train_samples / 100))))
             total_runs = len(
-                    list(product(data_splits, range(len(self.config['batch_size'])), range(len(self.config['lr'])))))
-            for e, (train_index, valid_index) in enumerate(kf.split(list(range(int(data_per * 60000 / 100))))):
+                list(product(data_splits, range(len(self.config['batch_size'])), range(len(self.config['lr'])))))
+            for e, (train_index, valid_index) in enumerate(kf.split(list(range(int(data_per * total_train_samples / 100))))):
                 print(f"Working on split {e}")
                 for batch_size in self.config['batch_size']:
                     print(f"Working on batch size {batch_size}")

@@ -10,30 +10,6 @@ Description:
 
 """
 
-# -*- coding: utf-8 -*-
-"""
-@created on: 5/9/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
-
-# -*- coding: utf-8 -*-
-"""
-@created on: 5/9/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
-
 import torch
 
 from difflr.models import LinearClassifier
@@ -71,7 +47,7 @@ def main():
 
     model = LinearClassifier
     tuner = Tuner(config=config, model=model)
-    tuner.tune(dataset=CIFARDataset, cv_split=5)
+    tuner.tune(dataset=CIFARDataset, cv_split=5, total_train_samples=50000)
     print(f"Finished tuning in {time.time() - start_time}secs")
 
 

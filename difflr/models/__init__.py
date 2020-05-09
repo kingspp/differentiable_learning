@@ -73,7 +73,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
             train_loader, test_loader = dataset(batch_size=self.config['batch_size'], train_p=self.config['train_p'],
                                                 test_p=self.config['test_p'],
-                                                use_cuda=True #if self.device == torch.device('cuda') else False
+                                                use_cuda=True if self.device == torch.device('cuda') else False
                                                 )
             dataiter = iter(train_loader)
             images, labels = dataiter.next()
@@ -103,7 +103,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                     train_metrics['loss'].append(loss.item())
                     loss.backward(retain_graph=True)
                     self.optimizer.step()
-                    train_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
+                    train_metrics['acc'].append(accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, axis=1).indices.cpu()))
                     train_metrics['mse'].append(
                         mse_score(logits=torch.softmax(raw, dim=1), target=target,
                                   num_classes=self.config['num_classes'],
@@ -152,7 +152,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 raw, logits = self(data)
                 loss = F.nll_loss(logits, target, reduction='mean')
                 test_metrics['loss'].append(loss.item())
-                test_metrics['acc'].append(accuracy_score(y_true=target, y_pred=torch.max(logits, axis=1).indices))
+                test_metrics['acc'].append(accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, axis=1).indices.cpu()))
                 test_metrics['mse'].append(
                     mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                               reduction='mean').item())

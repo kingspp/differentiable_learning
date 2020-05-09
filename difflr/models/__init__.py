@@ -66,7 +66,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None):
         self.to(self.device)
         with Tee(filename=self.exp_dir + '/model.log', io_enabled=not CONFIG.DRY_RUN):
-            print('Config: \n', json.dumps(self.config, indent=2), '\n')
+            print('Config: \n', json.dumps(self.config, indent=2, cls=CustomJsonEncoder), '\n')
             if not CONFIG.DRY_RUN:
                 writer = SummaryWriter(f'{self.exp_dir}/graphs')
             self.train()

@@ -65,10 +65,17 @@ class MNISTDataset():
     def __new__(cls, batch_size=32, use_cuda=False, train_p=100, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-        TRAIN_SAMPLES = int((60000 * train_p) / 100)
-        TEST_SAMPLES = int((10000 * test_p) / 100)
-        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
-        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        if isinstance(train_p, int):
+            TRAIN_SAMPLES = int((60000 * train_p) / 100)
+        else:
+            TRAIN_SAMPLES = len(train_p)
+
+        if isinstance(test_p, int):
+            TEST_SAMPLES = int((10000 * test_p) / 100)
+        else:
+            TEST_SAMPLES = len(test_p)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES) if isinstance(test_p, int) else test_p)
         print(
             f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
@@ -76,7 +83,7 @@ class MNISTDataset():
             batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(
             datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transform),
-            batch_size=batch_size, **kwargs)
+            batch_size=batch_size, sampler=test_sampler, **kwargs)
         return train_loader, test_loader
 
 
@@ -85,8 +92,8 @@ class FashionMNISTDataset():
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         TRAIN_SAMPLES = int((60000 * train_p) / 100)
         TEST_SAMPLES = int((10000 * test_p) / 100)
-        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
-        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES) if isinstance(test_p, int) else test_p)
         print(
             f"FashionMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -107,13 +114,13 @@ class CIFARDataset():
              transforms.Normalize((0.5,), (0.5,))])
         TRAIN_SAMPLES = int((50000 * train_p) / 100)
         TEST_SAMPLES = int((10000 * test_p) / 100)
-        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES))
-        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES) if isinstance(test_p, int) else test_p)
         print(
             f"FashionMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
             datasets.CIFAR10(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
             batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(datasets.CIFAR10(DIFFLR_DATA_PATH, train=False, transform=transform),
-                                                  batch_size=batch_size, shuffle=False, **kwargs)
+                                                  batch_size=batch_size, shuffle=False, sampler=test_sampler, **kwargs)
         return train_loader, test_loader

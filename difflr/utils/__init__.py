@@ -70,9 +70,9 @@ def plot_information_transfer(model, weights, display=True, debug=False):
     return weight_table
 
 
-def mse_score(logits, target, num_classes, reduction=None):
+def mse_score(logits, target, num_classes, reduction=None, device=torch.device('cpu')):
     one_hot_targets = np.eye(num_classes)[target.cpu()]
-    one_hot_targets = torch.tensor(one_hot_targets, dtype=torch.float).reshape([-1, num_classes])
+    one_hot_targets = torch.tensor(one_hot_targets, dtype=torch.float).reshape([-1, num_classes]).to(device)
     return F.mse_loss(logits, one_hot_targets, reduction=reduction)
 
 

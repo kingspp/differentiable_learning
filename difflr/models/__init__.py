@@ -107,7 +107,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                     train_metrics['mse'].append(
                         mse_score(logits=torch.softmax(raw, dim=1), target=target,
                                   num_classes=self.config['num_classes'],
-                                  reduction='mean').item())
+                                  reduction='mean', device=self.device).item())
                     if not CONFIG.DRY_RUN:
                         writer.add_scalar(tag='Train/batch/loss', scalar_value=train_metrics['loss'][-1],
                                           global_step=next(global_step))
@@ -155,7 +155,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 test_metrics['acc'].append(accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, axis=1).indices.cpu()))
                 test_metrics['mse'].append(
                     mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
-                              reduction='mean').item())
+                              reduction='mean', device=self.device).item())
 
             test_metrics_mean = {k: np.mean(v) for k, v in test_metrics.items()}
             if not CONFIG.DRY_RUN:

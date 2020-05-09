@@ -32,6 +32,7 @@ class Tuner():
                             current_config['lr'] = lr
                             current_config['epochs'] = epoch
                             model = self.model(config=current_config)
+                            model = model.to(model.device)
                             print("====" * 25)
                             print(current_config)
                             print(model)

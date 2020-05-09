@@ -64,6 +64,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
     def fit(self, dataset, log_type='epoch', log_interval=1,
             batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None):
+        self.to(self.device)
         with Tee(filename=self.exp_dir + '/model.log', io_enabled=not CONFIG.DRY_RUN):
             print('Config: \n', json.dumps(self.config, indent=2), '\n')
             if not CONFIG.DRY_RUN:
@@ -72,7 +73,8 @@ class Model(nn.Module, metaclass=ABCMeta):
 
             train_loader, test_loader = dataset(batch_size=self.config['batch_size'], train_p=self.config['train_p'],
                                                 test_p=self.config['test_p'],
-                                                use_cuda=True if self.device == torch.device('cuda') else False)
+                                                use_cuda=True #if self.device == torch.device('cuda') else False
+                                                )
             dataiter = iter(train_loader)
             images, labels = dataiter.next()
             print('Model: \n')

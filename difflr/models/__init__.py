@@ -161,7 +161,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
             # Early stopping
             if self.config['early_stopping']:
-                if np.var(self.metrics["valid"]["epoch"]["accuracy"][-5:]) < 8.25e-5 and len(
+                if np.var(self.metrics["valid"]["epoch"]["accuracy"][-5:]) < 8.25e-10 and len(
                         self.metrics["valid"]["epoch"]["accuracy"]) > 5:
                     print(f'Early after this run after {epoch}')
                     self.metrics['time_elapsed'] = time.time() - start_time

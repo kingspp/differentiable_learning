@@ -33,6 +33,7 @@ class Tuner():
                             current_config['lr'] = lr
                             current_config['epochs'] = epoch
                             model = self.model(config=current_config)
+                            print(id(model))
                             model = model.to(torch.device('cuda'))
                             print("====" * 25)
                             print(current_config)

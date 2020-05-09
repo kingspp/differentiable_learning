@@ -17,7 +17,7 @@ class Tuner():
     def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100):
         with Tee(filename=DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.log'):
             kf = KFold(n_splits=cv_split)
-            for e, (train_index, test_index) in enumerate(kf.split(list(range(int(data_per*60000/100))))):
+            for e, (train_index, valid_index) in enumerate(kf.split(list(range(int(data_per*60000/100))))):
                 print(f"Working on split {e}")
                 for epoch in self.config["epochs"]:
                     print(f"Working on epoch {epoch}")
@@ -28,7 +28,7 @@ class Tuner():
                             current_config = deepcopy(self.config)
                             current_config['model_name'] = current_config['model_name'] + f"_bs{batch_size}_lr{lr}"
                             current_config['train_p'] = train_index
-                            current_config['test_p'] = test_index
+                            current_config['valid_p'] = valid_index
                             current_config['batch_size'] = batch_size
                             current_config['lr'] = lr
                             current_config['epochs'] = epoch
@@ -45,5 +45,5 @@ class Tuner():
             print("Best Metrics: \n")
             print("Results: ", self.best_params['best_metrics']['test'])
             del self.best_params['best_metrics']['config']['train_p'], self.best_params['best_metrics']['config']['test_p']
-            print("Config: ", self.best_params['best_metrics']['config'])
+            print("Config: ", json.dumps(self.best_params['best_metrics']['config'], indent=2, cls=CustomJsonEncoder))
             json.dump(self.best_params, open(DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.json', 'w'), cls=CustomJsonEncoder, indent=2)

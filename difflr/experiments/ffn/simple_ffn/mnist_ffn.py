@@ -10,39 +10,39 @@ CONFIG.DRY_RUN = False
 def main():
     torch.manual_seed(0)
 
-    config = {
-        'model_name': 'simpleffn_tuned',
-        "num_classes": 10,
-        'in_features': 784,
-        'epochs': 5,
-        'batch_size': 10,
-        'lr': 1e-3,
-        'lr_decay': False,
-        "train_p": 10,
-        "test_p": 100,
-        'dnn_config':
-            {
-
-                'layers': [40, 25, 10]
-            }
-    }
-
     # config = {
     #     'model_name': 'simpleffn_tuned',
     #     "num_classes": 10,
     #     'in_features': 784,
-    #     'epochs': [10],
-    #     'batch_size': [10],
-    #     'lr': [1e-1, 1e-2, 1e-3],
-    #     'lr_decay':False,
-    #     "train_p":100,
-    #     "test_p":100,
+    #     'epochs': 5,
+    #     'batch_size': 10,
+    #     'lr': 1e-3,
+    #     'lr_decay': False,
+    #     "train_p": 10,
+    #     "test_p": 100,
     #     'dnn_config':
     #         {
     #
     #             'layers': [40, 25, 10]
     #         }
     # }
+
+    config = {
+        'model_name': 'simpleffn_tuned',
+        "num_classes": 10,
+        'in_features': 784,
+        'epochs': [10],
+        'batch_size': [10],
+        'lr': [1e-1, 1e-2, 1e-3],
+        'lr_decay':False,
+        "train_p":10,
+        "test_p":100,
+        'dnn_config':
+            {
+
+                'layers': [40, 25, 10]
+            }
+    }
 
     # config = {
     #     'model_name': 'simpleffn_tuned',
@@ -61,10 +61,10 @@ def main():
     #         }
     # }
 
-    model = LinearClassifier(config=config)
+    model = LinearClassifier
     tuner = Tuner(config=config, model=model)
-    # tuner.tune(dataset=MNISTDataset, cv_split=2)
-    model.fit(dataset=MNISTDataset)
+    tuner.tune(dataset=MNISTDataset, cv_split=2, data_per=1)
+    # model.fit(dataset=MNISTDataset)
 
 
 if __name__ == '__main__':

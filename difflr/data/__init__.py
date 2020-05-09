@@ -72,7 +72,7 @@ class MNISTDataset():
         print(
             f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=False, transform=transform),
+            datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
             batch_size=batch_size, sampler=train_sampler, **kwargs)
         test_loader = torch.utils.data.DataLoader(
             datasets.MNIST(DIFFLR_DATA_PATH, train=False, transform=transform),

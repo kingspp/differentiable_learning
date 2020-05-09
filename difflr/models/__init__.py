@@ -23,7 +23,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         super().__init__()
         self.name = name
         self.config = config
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.id = config['model_name'] + '-' + generate_timestamp()
         if 'exp_dir' not in self.config:
             self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)

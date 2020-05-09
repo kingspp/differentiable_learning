@@ -138,7 +138,7 @@ class CustomJsonEncoder(json.JSONEncoder):
                               np.float64)):
             return float(obj)
         elif isinstance(obj, (np.ndarray,)):
-            return obj.tolist()
+            return str(obj)[:10]#.tolist()
         elif isinstance(obj, set):
             return list(obj)
         else:

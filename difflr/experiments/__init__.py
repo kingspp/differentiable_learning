@@ -14,10 +14,10 @@ class Tuner():
         self.best_params = {}
         self.timestamp = generate_timestamp()
 
-    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x):
+    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100):
         with Tee(filename=DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.log'):
             kf = KFold(n_splits=cv_split)
-            for e, (train_index, test_index) in enumerate(kf.split(list(range(600)))):
+            for e, (train_index, test_index) in enumerate(kf.split(list(range(int(data_per*60000/100))))):
                 print(f"Working on split {e}")
                 for epoch in self.config["epochs"]:
                     print(f"Working on epoch {epoch}")

@@ -16,7 +16,7 @@ def main():
         'in_features': 784,
         'epochs': [10],
         'batch_size': [10],
-        'lr': [1e-1],
+        'lr': [1e-1, 1e-2, 1e-3],
         'lr_decay':False,
         "train_p":100,
         "test_p":100,

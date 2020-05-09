@@ -160,9 +160,12 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.lr_scheduler.step(epoch=epoch)
 
             # Early stopping
+            decreasing_count = 0
+            last_n = self.metrics["valid"]["epoch"]["accuracy"][-5:]
             if self.config['early_stopping']:
-                if np.var(self.metrics["valid"]["epoch"]["accuracy"][-5:]) < 8.25e-10 and len(
-                        self.metrics["valid"]["epoch"]["accuracy"]) > 5:
+                for e, x in enumerate(last_n[:-1]):
+                    decreasing_count += 1 if last_n[e + 1] - last_n[e] < 0 else 0
+                if np.var(last_n) < self.config['stopping_threshold'] and len(last_n) > 5 and decreasing_count < 5:
                     print(f'Early after this run after {epoch}')
                     self.metrics['time_elapsed'] = time.time() - start_time
                     return

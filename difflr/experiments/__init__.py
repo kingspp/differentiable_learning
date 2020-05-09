@@ -18,10 +18,10 @@ class Tuner():
     def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100):
         with Tee(filename=DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.log'):
             kf = KFold(n_splits=cv_split)
-            data_splits = kf.split(list(range(int(data_per * 60000 / 100))))
+            data_indices = list(range(int(data_per * dataset.total_train_size / 100)))
             total_runs = len(
-                    list(product(data_splits, range(len(self.config['batch_size'])), range(len(self.config['lr'])))))
-            for e, (train_index, valid_index) in enumerate(kf.split(list(range(int(data_per * 60000 / 100))))):
+                list(product(range(cv_split), range(len(self.config['batch_size'])), range(len(self.config['lr'])))))
+            for e, (train_index, valid_index) in enumerate(kf.split(data_indices)):
                 print(f"Working on split {e}")
                 for batch_size in self.config['batch_size']:
                     print(f"Working on batch size {batch_size}")

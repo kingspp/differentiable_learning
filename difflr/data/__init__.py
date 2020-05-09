@@ -62,6 +62,9 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class MNISTDataset():
+    total_train_size = 60_000
+    total_test_size = 10_000
+
     def __new__(cls, batch_size=32, use_cuda=False, train_p=90, valid_p=10, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
@@ -103,6 +106,9 @@ class MNISTDataset():
 
 
 class FashionMNISTDataset():
+    total_train_size = 60_000
+    total_test_size = 10_000
+
     def __new__(cls, batch_size, use_cuda, train_p=100, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         TRAIN_SAMPLES = int((60000 * train_p) / 100)
@@ -122,6 +128,9 @@ class FashionMNISTDataset():
 
 
 class CIFARDataset():
+    total_train_size = 50_000
+    total_test_size = 10_000
+
     def __new__(cls, batch_size, use_cuda, train_p=90, valid_p=10, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose(

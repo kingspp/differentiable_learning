@@ -11,16 +11,6 @@ Description:
 """
 
 # -*- coding: utf-8 -*-
-"""
-@created on: 5/9/20,
-@author: Shreesha N,
-@version: v0.0.1
-@system name: badgod
-Description:
-
-..todo::
-
-"""
 
 import torch
 
@@ -58,7 +48,7 @@ def main():
 
     model = LinearClassifier
     tuner = Tuner(config=config, model=model)
-    tuner.tune(dataset=MNISTDataset, cv_split=5)
+    tuner.tune(dataset=MNISTDataset, cv_split=2, data_per=5)
     print(f"Finished tuning in {time.time() - start_time}secs")
 
 

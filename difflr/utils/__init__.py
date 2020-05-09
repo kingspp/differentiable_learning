@@ -138,12 +138,13 @@ class CustomJsonEncoder(json.JSONEncoder):
                               np.float64)):
             return float(obj)
         elif isinstance(obj, (np.ndarray,)):
-            return str(obj)[:10]#.tolist()
+            return "Long Seq . . ."#obj.tolist()
         elif isinstance(obj, set):
             return list(obj)
         else:
             try:
-                return obj.default()
+                # return  obj.default()
+                return "Long Seq"
             except Exception:
                 return f'Object not serializable - {obj}'
 

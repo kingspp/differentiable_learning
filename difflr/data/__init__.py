@@ -77,7 +77,7 @@ class MNISTDataset():
         train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES) if isinstance(test_p, int) else test_p)
         print(
-            f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
+            f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({100}% of 60000) \nTest on {TEST_SAMPLES} samples ({100}% of 60000)\n")
         train_loader = torch.utils.data.DataLoader(
             datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
             batch_size=batch_size, sampler=train_sampler, **kwargs)

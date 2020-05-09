@@ -33,13 +33,8 @@ class Tuner():
                             current_config['lr'] = lr
                             current_config['epochs'] = epoch
                             model = self.model(config=current_config)
-                            print(id(model))
-                            model = model.to(torch.device('cuda'))
                             print("====" * 25)
-                            print(current_config)
-                            print(model)
                             metrics = model.fit(dataset=dataset, epoch_end_hook=epoch_end_hook)
-                            del model
                             print(json.dumps(metrics['test'], indent=2, cls=CustomJsonEncoder))
                             if 'best_metrics' in self.best_params:
                                 if self.best_params['best_metrics']['test']['loss'] > metrics['test']['loss'] and \
@@ -48,4 +43,7 @@ class Tuner():
                             else:
                                 self.best_params['best_metrics'] = metrics
                             print("====" * 25, "\n\n")
+            print("Best Metrics: \n")
+            print("Results: ", self.best_params['best_metrics']['test'])
+            print("Config: ", self.best_params['best_metrics']['config'])
             json.dump(self.best_params, open(DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.json', 'w'), cls=CustomJsonEncoder, indent=2)

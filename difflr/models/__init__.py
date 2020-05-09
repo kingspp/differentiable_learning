@@ -23,7 +23,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         super().__init__()
         self.name = name
         self.config = config
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = config['model_name'] + '-' + generate_timestamp()
         if 'exp_dir' not in self.config:
             self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)
@@ -72,7 +72,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
             train_loader, test_loader = dataset(batch_size=self.config['batch_size'], train_p=self.config['train_p'],
                                                 test_p=self.config['test_p'],
-                                                use_cuda=True if self.device == 'cuda' else False)
+                                                use_cuda=True if self.device == torch.device('cuda') else False)
             dataiter = iter(train_loader)
             images, labels = dataiter.next()
             print('Model: \n')

@@ -45,5 +45,6 @@ class Tuner():
                             print("====" * 25, "\n\n")
             print("Best Metrics: \n")
             print("Results: ", self.best_params['best_metrics']['test'])
+            del self.best_params['best_metrics']['config']['train_p'], self.best_params['best_metrics']['config']['test_p']
             print("Config: ", self.best_params['best_metrics']['config'])
             json.dump(self.best_params, open(DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.json', 'w'), cls=CustomJsonEncoder, indent=2)

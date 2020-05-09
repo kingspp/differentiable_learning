@@ -37,8 +37,7 @@ class Tuner():
                             metrics = model.fit(dataset=dataset, epoch_end_hook=epoch_end_hook)
                             print(json.dumps(metrics['test'], indent=2, cls=CustomJsonEncoder))
                             if 'best_metrics' in self.best_params:
-                                if self.best_params['best_metrics']['test']['loss'] > metrics['test']['loss'] and \
-                                        self.best_params['best_metrics']['test']['accuracy'] > metrics['test']['accuracy']:
+                                if self.best_params['best_metrics']['test']['accuracy'] < metrics['test']['accuracy']:
                                     self.best_params['best_metrics'] = metrics
                             else:
                                 self.best_params['best_metrics'] = metrics

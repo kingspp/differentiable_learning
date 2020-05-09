@@ -171,7 +171,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
             if not CONFIG.DRY_RUN:
                 self.save()
-                writer.add_graph(self, images)
+                writer.add_graph(self.to(self.device), images)
                 writer.close()
                 json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
 

@@ -17,6 +17,7 @@ import time
 from torchsummary import summary
 from difflr import CONFIG
 from collections import deque
+from difflr.utils.early_stopping import EarlyStopping
 
 
 class Model(nn.Module, metaclass=ABCMeta):
@@ -71,8 +72,6 @@ class Model(nn.Module, metaclass=ABCMeta):
         if 'test_p' not in self.config:
             self.config['test_p'] = 100
 
-        self.early_stopping_counter = deque([], 5)
-
     @abstractmethod
     def evaluate(self, data):
         pass
@@ -80,6 +79,7 @@ class Model(nn.Module, metaclass=ABCMeta):
     def run_train(self, train_loader, valid_loader, log_type, log_interval, batch_end_hook, epoch_end_hook,
                   shape_printer_hook):
         self.train()
+        early_stopper = EarlyStopping(mode='max', patience=self.config['patience'])
         dataiter = iter(train_loader)
         images, labels = dataiter.next()
         self.writer.add_graph(self.to(self.device), images.to(self.device))
@@ -160,15 +160,10 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.lr_scheduler.step(epoch=epoch)
 
             # Early stopping
-            decreasing_count = 0
-            last_n = self.metrics["valid"]["epoch"]["accuracy"][-5:]
-            if self.config['early_stopping']:
-                for e, x in enumerate(last_n[:-1]):
-                    decreasing_count += 1 if last_n[e + 1] - last_n[e] < 0 else 0
-                if np.var(last_n) < self.config['stopping_threshold'] and len(last_n) > 5 and decreasing_count < 5:
-                    print(f'Early after this run after {epoch}')
-                    self.metrics['time_elapsed'] = time.time() - start_time
-                    return
+            if early_stopper.step(self.metrics["valid"]["epoch"]["accuracy"][-1]):
+                print(f'Early Stopping this run after {epoch}')
+                self.metrics['time_elapsed'] = time.time() - start_time
+                return
         self.metrics['time_elapsed'] = time.time() - start_time
 
     def run_test(self, test_loader, mode, step=None):

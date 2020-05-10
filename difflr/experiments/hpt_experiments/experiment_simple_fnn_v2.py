@@ -14,6 +14,7 @@ Description:
 
 import torch
 
+print('GPU ', torch.cuda.is_available())
 from difflr.models import LinearClassifier
 from difflr.data import MNISTDataset
 from difflr import CONFIG
@@ -25,6 +26,33 @@ CONFIG.DRY_RUN = False
 
 def main():
     torch.manual_seed(0)
+
+    # start_time = time.time()
+    # config = {
+    #     'model_name': 'simpleffn_tuned_SGD_100p_params_100p_data',
+    #     "num_classes": 10,
+    #     'in_features': 784,
+    #     'epochs': 100,
+    #     'batch_size': [32],
+    #     'lr': [1e-2, 1e-3],
+    #     'lr_decay': False,
+    #     "train_p": 100,
+    #     "test_p": 100,
+    #     'dnn_config':
+    #         {
+    #
+    #             'layers': [100, 50, 10]
+    #         },
+    #     'early_stopping': True,
+    #     'patience': 10
+    # }
+    #
+    # model = LinearClassifier
+    # tuner = Tuner(config=config, model=model)
+    # tuner.tune(dataset=MNISTDataset, cv_split=5)
+    # print(f"Finished tuning in {time.time() - start_time}secs")
+
+    ###########################################################
 
     start_time = time.time()
     config = {
@@ -43,7 +71,7 @@ def main():
                 'layers': [45, 20, 10]
             },
         'early_stopping': True,
-        'stopping_threshold': 8.25e-6
+        'patience': 10
     }
 
     model = LinearClassifier
@@ -69,7 +97,7 @@ def main():
                 'layers': [100, 50, 10]
             },
         'early_stopping': True,
-        'stopping_threshold': 8.25e-6
+        'patience': 10
     }
 
     model = LinearClassifier
@@ -95,7 +123,7 @@ def main():
                 'layers': [45, 20, 10]
             },
         'early_stopping': True,
-        'stopping_threshold': 8.25e-6
+        'patience': 10
     }
 
     model = LinearClassifier

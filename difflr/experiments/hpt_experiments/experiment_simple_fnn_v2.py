@@ -76,7 +76,7 @@ def main():
 
     model = LinearClassifier
     tuner = Tuner(config=config, model=model)
-    tuner.tune(dataset=MNISTDataset, cv_split=5)
+    tuner.tune(dataset=MNISTDataset, cv_split=5, data_per=5)
     print(f"Finished tuning in {time.time() - start_time}secs")
 
     ###########################################################

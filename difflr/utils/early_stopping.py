@@ -50,7 +50,7 @@ class EarlyStopping(object):
             if mode == 'min':
                 self.is_better = lambda a, best: a < best - min_delta
             if mode == 'max':
-                self.is_better = lambda a, best: a > a + min_delta
+                self.is_better = lambda a, best: a > best + min_delta
         else:
             if mode == 'min':
                 self.is_better = lambda a, best: a < best - (

@@ -41,13 +41,13 @@ def main():
                 'layers': [150, 60, 10]
             },
         'early_stopping': True,
-        'stopping_threshold': 8.25e-6,
+        'patience': 10
 
     }
 
     model = LinearClassifier
     tuner = Tuner(config=config, model=model)
-    tuner.tune(dataset=CIFARDataset, cv_split=5, total_train_samples=50000)
+    tuner.tune(dataset=CIFARDataset, cv_split=5)
     print(f"Finished tuning in {time.time() - start_time}secs")
 
 

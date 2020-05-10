@@ -65,7 +65,7 @@ def main():
         "test_p": 100,
         'dnn_config':
             {
-                'layers': [67, 24, 10]
+                'layers': [35, 20, 10]
             },
         'early_stopping': True,
         'patience': 10
@@ -120,7 +120,7 @@ def main():
         'dnn_config':
             {
 
-                'layers': [67, 24, 10]
+                'layers': [35, 20, 10]
             },
         'early_stopping': True,
         'patience': 10

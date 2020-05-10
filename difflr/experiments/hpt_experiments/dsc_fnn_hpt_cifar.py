@@ -1,5 +1,5 @@
 import torch
-from difflr.models import LinearClassifier
+from difflr.models import LinearClassifierDSC
 from difflr.data import FashionMNISTDataset
 from difflr import CONFIG
 from difflr.experiments import Tuner
@@ -25,13 +25,13 @@ def main():
         'dnn_config':
             {
 
-                'layers': [150, 60, 10]
+                'layers': [15, 10, 10]
             },
         'early_stopping': True,
         'patience': 10
     }
 
-    model = LinearClassifier
+    model = LinearClassifierDSC
     tuner = Tuner(config=config, model=model)
     tuner.tune(dataset=FashionMNISTDataset, cv_split=5)
     print(f"Finished tuning in {time.time() - start_time}secs")
@@ -58,7 +58,7 @@ def main():
         'patience': 10
     }
 
-    model = LinearClassifier
+    model = LinearClassifierDSC
     tuner = Tuner(config=config, model=model)
     tuner.tune(dataset=FashionMNISTDataset, cv_split=5)
     print(f"Finished tuning in {time.time() - start_time}secs")
@@ -84,7 +84,7 @@ def main():
         'patience': 10
     }
 
-    model = LinearClassifier
+    model = LinearClassifierDSC
     tuner = Tuner(config=config, model=model)
     tuner.tune(dataset=FashionMNISTDataset, cv_split=5, data_per=10)
     print(f"Finished tuning in {time.time() - start_time}secs")
@@ -110,7 +110,7 @@ def main():
         'patience': 10
     }
 
-    model = LinearClassifier
+    model = LinearClassifierDSC
     tuner = Tuner(config=config, model=model)
     tuner.tune(dataset=FashionMNISTDataset, cv_split=5, data_per=10)
     print(f"Finished tuning in {time.time() - start_time}secs")

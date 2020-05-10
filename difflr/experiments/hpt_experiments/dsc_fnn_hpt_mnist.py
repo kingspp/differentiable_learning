@@ -25,7 +25,7 @@ def main():
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [10, 10, 10]
             },
         'early_stopping': True,
         'patience': 10

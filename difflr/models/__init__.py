@@ -90,7 +90,6 @@ class Model(nn.Module, metaclass=ABCMeta):
         print('Summary: \n')
         summary(self, input_size=images.shape[1:])
         print('\n')
-        exit()
         # self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
         self.optimizer = optim.SGD(self.parameters(), lr=self.config['lr'])
 

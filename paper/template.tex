@@ -64,7 +64,7 @@
 \begin{abstract}
 The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as the later can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning \cite{He2016DeepRL} in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, \cite{Trask2018NeuralAL}, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
 
-In our experiments we showcase that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that even with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture can build better representations with minimal data.
+In our experiments, we showcase that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that even with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture can build better representations with minimal data.
 \end{abstract}
 
 
@@ -73,11 +73,11 @@ In our experiments we showcase that increased weighted representation capability
 
 
 \section{Introduction}
-The ability to recognize patterns and develop strong relations among them has made Neural Network supersede state of the art machine learning techniques. The depth of representations is of central importance for many visual recognition tasks. Right from Alex Net \cite{Krizhevsky2012ImageNetCW} up until ResNet \cite{He2016DeepRL} the flow of data followed linear fashion i.e the data flows from one layer to the next layer and so on. ResNet brought in an innovation \emph{"Short Circuits"} meaning there exists a skip connection where the data is fed to the next layer and in certain circumstances it is fed to next layer and also the layer after its immediate next. This paved way to train deep-networks as it increased the representational capability of the network by overcoming issues such as vanishing / exploding gradients \cite{Bengio1994LearningLD, Glorot2010UnderstandingTD}. In our work we set out a goal to explore the \emph{"representational capability"} and its effects on the performance of the network. This led to the question - "What to feed?".
+The ability to recognize patterns and develop strong relations among them has made Neural Network supersede state of the art machine learning techniques. The depth of representations is of central importance for many visual recognition tasks. Right from Alex Net \cite{Krizhevsky2012ImageNetCW} up until ResNet \cite{He2016DeepRL} the flow of data followed linear fashion i.e the data flow from one layer to the next layer and so on. ResNet brought in an innovation \emph{" Short Circuits"} meaning there exists a skip connection where the data is fed to the next layer and in certain circumstances, it is fed to the next layer and also the layer after its immediate next. This paved way to train deep-networks as it increased the representational capability of the network by overcoming issues such as vanishing / exploding gradients \cite{Bengio1994LearningLD, Glorot2010UnderstandingTD}. In our work we set out a goal to explore the \emph{"representational capability"} and its effects on the performance of the network. This led to the question - "What to feed?".
 
-ResNet brings in short circuits between residual components and the number of skip connections are restricted. We propose \emph{"Global Short Circuit"}(GSC) to investigate the behaviour of short circuits by revoking the restriction and providing skip connections from one layer to every other layer. This enhances representational capability of the network and results in achieving better accuracy in fewer iterations compared to standard architecture (See section \ref{sssec:ffn}). However, the modification results in a large network compared to a standard architecture. Due to increased parameters, the network is not scalable. To tackle this issue we propose an enhanced GSC i.e\emph{"Differentiable Short Circuit"}(DSC) - a novel architecture to help network scale by pruning unwanted skip connections over time.
+ResNet brings in short circuits between residual components and the number of skip connections is restricted. We propose \emph{"Global Short Circuit"}(GSC) to investigate the behavior of short circuits by revoking the restriction and providing skip connections from one layer to every other layer. This enhances the representational capability of the network and results in achieving better accuracy in fewer iterations compared to standard architecture (See section \ref{sssec:ffn}). However, the modification results in a large network compared to a standard architecture. Due to increased parameters, the network is not scalable. To tackle this issue we propose an enhanced GSC i.e, \emph{" Differentiable Short Circuit"}(DSC) - a novel architecture to help network scale by pruning unwanted skip connections over time.
 
-To tackle the issue of \emph{"When to stop"}?, we devise an algorithm - \emph{Information Transfer}. It is a measure of the amount of flow of data from one layer to another. By keeping track of variance in the Information Transfer over iterations, based on a certain threshold we propose a stoping criteria.
+To tackle the issue of \emph{"When to stop"}?, we devise an algorithm - \emph{Information Transfer}. It is a measure of the amount of flow of data from one layer to another. By keeping track of variance in the Information Transfer over iterations, based on a certain threshold we propose a stopping criterion.
 
 \section{Differentiable Learning}
 \label{sec:headings}
@@ -100,7 +100,7 @@ A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to
 \begin{equation}
 \label{eq:sigmoid_activation}
 \begin{aligned}
-\sigma(x) &= \frac{1}{1+e^-x} \;\;\;\;\;\;  x\in\mathbb{R}, 0<\sigma(x)<1
+\sigma(x) &= \frac{1}{1+e^{-x}} \;\;\;\;\;\;  x\in\mathbb{R}, 0<\sigma(x)<1
 \end{aligned}
 \end{equation}
 
@@ -137,7 +137,7 @@ For a 3 layer network with node configurations [100,50,10] and 784 input feature
 \vspace{2em}
 
 \subsection{Global Short Circuit}
-We propose Global Short Circuit architecture to explore the impact of skip connection on representational capabilities of the network. There exists a connection from every layer to every other layer in the network. Few possible ways of merging layers are explored in DenseNet\cite{Li2018DenselyCC} and ResNet\cite{He2016DeepRL}. In ResNet weighted feature maps are merged using $max$ or $sum$. DenseNet merges feature using a concatenate operation. We define a merge operation similar to DenseNet - $concat$ style merge. However this style of merge has an issue when it comes to Convolutional Neural Networks where there is a requirement to merge feature maps of different shapes. We use downsampling/padding operators to get identical shapes. Figure \ref{fig:GSC.png} shows standard architecture defined in section \ref{sssec:ffn} having connections from one layer to every other layer, merged using concat operation. Equation \ref{eq:gsc_math_representation} provides mathematical representation of the architecture.
+We propose Global Short Circuit architecture to explore the impact of skip connection on representational capabilities of the network. There exists a connection from every layer to every other layer in the network. Few possible ways of merging layers are explored in DenseNet\cite{Li2018DenselyCC} and ResNet\cite{He2016DeepRL}. In ResNet weighted feature maps are merged using $max$ or $sum$. DenseNet merges feature using a concatenate operation. We define a merge operation similar to DenseNet's $concat$ style merge. However, this way of merge has an issue when it comes to Convolutional Neural Networks where there is a requirement to merge feature maps of different shapes. We use downsampling/padding operators to get identical shapes. Figure \ref{fig:GSC.png} shows standard architecture defined in section \ref{sssec:ffn} having connections from one layer to every other layer, merged using concat operation. The difference in the connections between the layers is relative to the number of gradient operations required for the respective layer. Equation \ref{eq:gsc_math_representation} provides mathematical representation of the architecture.
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering
@@ -184,7 +184,7 @@ For the previously mentioned 3 layer network, we have to train an exponential in
 \end{minipage}
 \begin{minipage}{.45\textwidth}
 \begin{equation}
-\label{eq:ffn_math_representation}
+\label{eq:dsc_math_representation}
 \begin{aligned}
    Dense_{1} &= \sigma((\sigma(\hat{C}_{1}) \cdot Input) \cdot \hat{W}_{1} + \hat{b}_{1}) &\\
    Dense_{2} &= \sigma((\sigma(\hat{C}_{2}) \cdot [Input \oplus Dense_{1}]) \cdot \hat{W}_{2} + \hat{b}_{2}) &\\
@@ -196,7 +196,7 @@ For the previously mentioned 3 layer network, we have to train an exponential in
 Comparing to equation \ref{eq:gsc_params} 
 
 \begin{equation}
-\label{eq:dsc_math_representation}
+\label{eq:dsc_params}
 Params= \sum_{n=1}^{m}\left[
 \underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
 *\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
@@ -204,7 +204,7 @@ Params= \sum_{n=1}^{m}\left[
 +\underbrace{\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{connection weights}}\right]
 \end{equation}
 
-For DSC we notice a slight increase in parameters due to the use \emph{gates}. There exists a trainable gate for every connection. As a result, for the network structure defined in the standard architecture, the number of trainable parameter is 124,418.
+For DSC, we notice a slight increase in parameters due to the use \emph{gates}. There exists a trainable gate for every connection. As a result, for the network structure defined in the standard architecture, the number of trainable parameter is 124,418.
 
 \subsubsection{Information Transfer}
 We propose \emph{Information transfer} (IT) as the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation \cite{Han1995TheIO} defined by $\sigma(x) = \frac{1}{1+e^-x}$ $x\in\mathbb{R}, 0<\sigma(x)<1$  gives the ability to express the transfer in terms of percentage. 
@@ -265,7 +265,7 @@ See Figure \ref{fig:fig1}. Here is how you add footnotes. \footnote{Sample of th
   \centering
   \fbox{\rule[-.5cm]{4cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
   \caption{Sample figure caption.}
-  \label{fig:SimpleFFN.png}
+%   \label{fig:SimpleFFN.png}
 \end{figure}
 
 \subsection{Tables}

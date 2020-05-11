@@ -62,13 +62,7 @@
 \maketitle
 
 \begin{abstract}
-The idea of linear flow for the deep neural network is limiting in the sense of the way we, humans think.
-The linear flow would be a constraint for a DNN as the later can process data and emulate relationships
-in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning
-\cite{He2016DeepRL} in the form of short-circuit connections eases the process of training the network. By
-replacing the linear flow constraint with a decision process of placing short-circuit connections between
-layers as a gradient-based approach would yield better results. We propose a novel idea of extending
-the capabilities of previously used short-circuits as differentiable functions, \cite{Trask2018NeuralAL}, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
+The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as the later can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning \cite{He2016DeepRL} in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, \cite{Trask2018NeuralAL}, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
 
 In our experiments we showcase that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that even with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture can build better representations with minimal data.
 \end{abstract}
@@ -92,19 +86,19 @@ Neural networks are differentiable by design. The standard architecture (\ref{ss
 
 \subsection{Feed Forward Neural Network}
 \label{sssec:ffn}
-Multilayer perceptron trained using back-propagation \cite{Rumelhart1986LearningIR}, a supervised learning algorithm are useful for their ability to solve the problems stochastically often approximating solutions for complex problems. Acting as a universal approximator, the architecture has a linear flow. The current layer take only the output of previous layer as input. Since the number of connections increase linearly based on the nodes in the layer, the architecture is scalable and time efficient. Figure \ref{fig:SimpleFFN.png} represents standard feed forward architecture and equation \ref{eq:1} is the mathematical formulation of the network. Each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer. A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to output of each node.
-
+Multilayer perceptron trained using back-propagation \cite{Rumelhart1986LearningIR}, a supervised learning algorithm are useful for their ability to solve the problems stochastically often approximating solutions for complex problems. Acting as a universal approximator, the architecture has a linear flow. The current layer take only the output of previous layer as input. Since the number of connections increase linearly based on the nodes in the layer, the architecture is scalable and time efficient. Figure \ref{fig:SimpleFFN.png} represents standard feed forward architecture and equation \ref{eq:ffn_math_representation} is the mathematical formulation of the network. Each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer. 
 
 \begin{equation}
-\label{eq:1}
+\label{eq:affine_transformation}
 \begin{aligned}
 \hat{Z} &= Input \cdot \hat{W} + \hat{b}&\\
 \end{aligned}
 \end{equation}
 
+A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to output of each node.
 
 \begin{equation}
-\label{eq:2}
+\label{eq:sigmoid_activation}
 \begin{aligned}
 \sigma(x) &= \frac{1}{1+e^-x} \;\;\;\;\;\;  x\in\mathbb{R}, 0<\sigma(x)<1
 \end{aligned}
@@ -118,7 +112,7 @@ Multilayer perceptron trained using back-propagation \cite{Rumelhart1986Learning
 \end{minipage}
 \begin{minipage}{.45\textwidth}
 \begin{equation}
-\label{eq:1}
+\label{eq:ffn_math_representation}
 \begin{aligned}
    Dense_{1} &= \sigma(Input \cdot \hat{W}_{1} + \hat{b}_{1}) &\\
    Dense_{2} &= \sigma(Dense_{1} \cdot \hat{W}_{2} + \hat{b}_{2}) &\\
@@ -130,20 +124,20 @@ Multilayer perceptron trained using back-propagation \cite{Rumelhart1986Learning
 The number of trainable parameters for a current layer is only a function of the layer's weight, bias and input. It can be represented as, 
 
 \begin{equation}
-\label{eq:4}
+\label{eq:ffn_params}
 Params= \sum_{n=1}^{m}
 \underbrace{(L_{n-1}\rule[-12pt]{0pt}{5pt}}_{\mbox{input}}
 *\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
 +\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}
 \end{equation}
 
-For a 3 layer network with node configurations [100,50,10] and 784 input features, using equation \ref{eq:4} we arrive at 83,550 trainable parameters
+For a 3 layer network with node configurations [100,50,10] and 784 input features, using equation \ref{eq:ffn_params} we arrive at 83,550 trainable parameters
 
 
 \vspace{2em}
 
 \subsection{Global Short Circuit}
-We propose Global Short Circuit architecture to explore the impact of skip connection on representational capabilities of the network. There exists a connection from every layer to every other layer in the network. Few possible ways of merging layers are explored in DenseNet\cite{Li2018DenselyCC} and ResNet\cite{He2016DeepRL}. In ResNet weighted feature maps are merged using $max$ or $sum$. DenseNet merges feature using a concatenate operation. We define a merge operation similar to DenseNet - $concat$ style merge. However this style of merge has an issue when it comes to Convolutional Neural Networks where there is a requirement to merge feature maps of different shapes. We use downsampling/padding operators to get identical shapes. Figure \ref{fig:GSC.png} shows standard architecture defined in section \ref{sssec:ffn} having connections from one layer to every other layer, merged using concat operation. Equation \ref{eq:2} provides mathematical representation of the architecture.
+We propose Global Short Circuit architecture to explore the impact of skip connection on representational capabilities of the network. There exists a connection from every layer to every other layer in the network. Few possible ways of merging layers are explored in DenseNet\cite{Li2018DenselyCC} and ResNet\cite{He2016DeepRL}. In ResNet weighted feature maps are merged using $max$ or $sum$. DenseNet merges feature using a concatenate operation. We define a merge operation similar to DenseNet - $concat$ style merge. However this style of merge has an issue when it comes to Convolutional Neural Networks where there is a requirement to merge feature maps of different shapes. We use downsampling/padding operators to get identical shapes. Figure \ref{fig:GSC.png} shows standard architecture defined in section \ref{sssec:ffn} having connections from one layer to every other layer, merged using concat operation. Equation \ref{eq:gsc_math_representation} provides mathematical representation of the architecture.
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering
@@ -153,7 +147,7 @@ We propose Global Short Circuit architecture to explore the impact of skip conne
 \end{minipage}
 \begin{minipage}{.45\textwidth}
 \begin{equation}
-\label{eq:2}
+\label{eq:gsc_math_representation}
 \begin{aligned}
        Dense_{1} &= \sigma(Input \cdot \hat{W}_{1} + \hat{b}_{1}) &\\
        Dense_{2} &= \sigma([Input \oplus Dense_{1}] \cdot \hat{W}_{2} + \hat{b}_{2}) &\\
@@ -167,7 +161,7 @@ Experiments show that GSC performs better than standard architecture on large an
 Compared to the standard architecture, GSC has a considerable increase in the number of training parameters.  This is due to the effect of merge operation of previous $n-1$ layers for $n$th layer.
 
 \begin{equation}
-\label{eq:4}
+\label{eq:gsc_params}
 Params= \sum_{n=1}^{m}\left[
 \underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
 *\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
@@ -190,7 +184,7 @@ For the previously mentioned 3 layer network, we have to train an exponential in
 \end{minipage}
 \begin{minipage}{.45\textwidth}
 \begin{equation}
-\label{eq:3}
+\label{eq:ffn_math_representation}
 \begin{aligned}
    Dense_{1} &= \sigma((\sigma(\hat{C}_{1}) \cdot Input) \cdot \hat{W}_{1} + \hat{b}_{1}) &\\
    Dense_{2} &= \sigma((\sigma(\hat{C}_{2}) \cdot [Input \oplus Dense_{1}]) \cdot \hat{W}_{2} + \hat{b}_{2}) &\\
@@ -199,10 +193,10 @@ For the previously mentioned 3 layer network, we have to train an exponential in
 \end{equation}
 \end{minipage}
 
-
+Comparing to equation \ref{eq:gsc_params} 
 
 \begin{equation}
-\label{eq:4}
+\label{eq:dsc_math_representation}
 Params= \sum_{n=1}^{m}\left[
 \underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
 *\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}

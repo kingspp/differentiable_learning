@@ -17,6 +17,8 @@
 \usepackage{caption}        % Advanced caption configuration
 \usepackage{amsmath}        % Math package for equations       
 \usepackage{titlesec}       % Title section
+\usepackage{graphicx}       % For adding labels to parts of the equation
+\usepackage{stackrel}       % For adding labels to parts of the equation
 
 % Theme Configurations
 
@@ -125,6 +127,18 @@ Multilayer perceptron trained using back-propagation \cite{Rumelhart1986Learning
 \end{equation}
 \end{minipage}
 
+The number of trainable parameters for a current layer is only a function of the layer's weight, bias and input. It can be represented as, 
+
+\begin{equation}
+\label{eq:4}
+Params= \sum_{n=1}^{m}
+\underbrace{(L_{n-1}\rule[-12pt]{0pt}{5pt}}_{\mbox{input}}
+*\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
++\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}
+\end{equation}
+
+For a 3 layer network with node configurations [100,50,10] and 784 input features, using equation \ref{eq:4} we arrive at 83,550 trainable parameters
+
 
 \vspace{2em}
 
@@ -148,7 +162,19 @@ We propose Global Short Circuit architecture to explore the impact of skip conne
 \end{equation}
 \end{minipage}
 
-Experiments show that GSC performs better than standard architecture on large and minimal datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers. However, it suffers from an exponential increase in connections resulting in delayed training times. As the complexity of the network increases in terms of depth, we notice a rise in the number of stacked layers and is not scalable.  
+Experiments show that GSC performs better than standard architecture on large and minimal datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers. However, it suffers from an exponential increase in connections resulting in delayed training times. As the complexity of the network increases in terms of depth, we notice a rise in the number of stacked layers and is not scalable.
+
+Compared to the standard architecture, GSC has a considerable increase in the number of training parameters.  This is due to the effect of merge operation of previous $n-1$ layers for $n$th layer.
+
+\begin{equation}
+\label{eq:4}
+Params= \sum_{n=1}^{m}
+\underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
+*\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
++\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}
+\end{equation}
+
+For a previously mentioned 3 layer network, we have to train an exponential increase of 30\% i.e, 122,750 parameters.
 
 \subsection{Differentiable Short Circuit}
 \lipsum[6]

@@ -168,13 +168,13 @@ Compared to the standard architecture, GSC has a considerable increase in the nu
 
 \begin{equation}
 \label{eq:4}
-Params= \sum_{n=1}^{m}
+Params= \sum_{n=1}^{m}\left[
 \underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
 *\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
-+\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}
++\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}\right]
 \end{equation}
 
-For a previously mentioned 3 layer network, we have to train an exponential increase of 30\% i.e, 122,750 parameters.
+For the previously mentioned 3 layer network, we have to train an exponential increase of 30\% i.e, 122,750 parameters.
 
 \subsection{Differentiable Short Circuit}
 \lipsum[6]
@@ -201,7 +201,16 @@ For a previously mentioned 3 layer network, we have to train an exponential incr
 
 
 
+\begin{equation}
+\label{eq:4}
+Params= \sum_{n=1}^{m}\left[
+\underbrace{(\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{merged inputs}}
+*\underbrace{L_{n})\rule[-12pt]{0pt}{5pt}}_{\mbox{weights}}
++\underbrace{L_{n}\rule[-12pt]{0pt}{5pt}}_{\mbox{bias}}
++\underbrace{\sum_{i=0}^{n}L_{i}\rule[-12pt]{0pt}{5pt}}_{\mbox{connection weights}}\right]
+\end{equation}
 
+For DSC we notice a slight increase in parameters due to the use \emph{gates}. There exists a trainable gate for every connection. As a result, for the network structure defined in the standard architecture, the number of trainable parameter is 124,418.
 
 \subsubsection{Information Transfer}
 We propose \emph{Information transfer} (IT) as the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation \cite{Han1995TheIO} defined by $\sigma(x) = \frac{1}{1+e^-x}$ $x\in\mathbb{R}, 0<\sigma(x)<1$  gives the ability to express the transfer in terms of percentage. 

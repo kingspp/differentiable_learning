@@ -71,15 +71,14 @@ class Model(nn.Module, metaclass=ABCMeta):
         if 'test_p' not in self.config:
             self.config['test_p'] = 100
 
-        self.early_stopping_counter = deque([], 5)
-
     @abstractmethod
     def evaluate(self, data):
         pass
 
     def run_train(self, train_loader, valid_loader, log_type, log_interval, batch_end_hook, epoch_end_hook,
-                  shape_printer_hook):
+                  shape_printer_hook, early_stopper=None):
         self.train()
+
         dataiter = iter(train_loader)
         images, labels = dataiter.next()
         self.writer.add_graph(self.to(self.device), images.to(self.device))
@@ -160,15 +159,10 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.lr_scheduler.step(epoch=epoch)
 
             # Early stopping
-            decreasing_count = 0
-            last_n = self.metrics["valid"]["epoch"]["accuracy"][-5:]
-            if self.config['early_stopping']:
-                for e, x in enumerate(last_n[:-1]):
-                    decreasing_count += 1 if last_n[e + 1] - last_n[e] < 0 else 0
-                if np.var(last_n) < self.config['stopping_threshold'] and len(last_n) > 5 and decreasing_count < 5:
-                    print(f'Early after this run after {epoch}')
-                    self.metrics['time_elapsed'] = time.time() - start_time
-                    return
+            if early_stopper is not None and early_stopper.step(self.metrics["valid"]["epoch"]["accuracy"][-1]):
+                print(f'Early Stopping this run after {epoch}')
+                self.metrics['time_elapsed'] = time.time() - start_time
+                return
         self.metrics['time_elapsed'] = time.time() - start_time
 
     def run_test(self, test_loader, mode, step=None):
@@ -203,7 +197,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.writer = None
 
     def fit(self, dataset, log_type='epoch', log_interval=1,
-            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None):
+            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None, early_stopper=None):
         if not CONFIG.DRY_RUN:
             self.writer = SummaryWriter(f'{self.exp_dir}/graphs')
         self.to(self.device)
@@ -220,7 +214,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             # Train and Valid
             self.run_train(train_loader=train_loader, valid_loader=valid_loader, log_type=log_type,
                            log_interval=log_interval, batch_end_hook=batch_end_hook, epoch_end_hook=epoch_end_hook,
-                           shape_printer_hook=shape_printer_hook)
+                           shape_printer_hook=shape_printer_hook, early_stopper=early_stopper)
             # Test
             self.run_test(test_loader=test_loader, mode="test")
             print(

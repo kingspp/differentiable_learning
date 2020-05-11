@@ -109,22 +109,44 @@ class FashionMNISTDataset():
     total_train_size = 60_000
     total_test_size = 10_000
 
-    def __new__(cls, batch_size, use_cuda, train_p=100, test_p=100, *args, **kwargs):
+    def __new__(cls, batch_size, use_cuda, train_p=90, valid_p=10, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-        TRAIN_SAMPLES = int((60000 * train_p) / 100)
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+        if isinstance(train_p, int):
+            TRAIN_SAMPLES = int((60000 * train_p) / 100)
+            TRAIN_P = train_p
+        else:
+            TRAIN_SAMPLES = len(train_p)
+            TRAIN_P = len(train_p) / 60000 * 100
+
+        if isinstance(valid_p, int):
+            VALID_SAMPLES = int((60000 * valid_p) / 100)
+            VALID_P = valid_p
+        else:
+            VALID_SAMPLES = len(valid_p)
+            VALID_P = len(valid_p) / 60000 * 100
+
         TEST_SAMPLES = int((10000 * test_p) / 100)
         train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
-        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES) if isinstance(test_p, int) else test_p)
+        valid_sampler = SubsetRandomSampler(
+                range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
+        test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
-                f"FashionMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({train_p}% of 60000) \nTest on {TEST_SAMPLES} samples ({test_p}% of 60000)\n")
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+                f"FASHIONMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of 60000) \n"
+                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of 60000)\n"
+                f"Test on {TEST_SAMPLES} samples ({test_p}% of 10000)\n")
         train_loader = torch.utils.data.DataLoader(
                 datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
                 batch_size=batch_size, sampler=train_sampler, **kwargs)
+
+        valid_loader = torch.utils.data.DataLoader(
+                datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
+                batch_size=batch_size, sampler=valid_sampler, **kwargs)
+
         test_loader = torch.utils.data.DataLoader(
                 datasets.FashionMNIST(DIFFLR_DATA_PATH, train=False, transform=transform),
                 batch_size=batch_size, sampler=test_sampler, **kwargs)
-        return train_loader, test_loader
+        return train_loader, valid_loader, test_loader
 
 
 class CIFARDataset():

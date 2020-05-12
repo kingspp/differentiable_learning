@@ -53,13 +53,15 @@ class Model(nn.Module, metaclass=ABCMeta):
                 'epoch': {
                     'loss': [],
                     'accuracy': [],
-                    'mse': []
+                    'mse': [],
+                    'confidence_score':[]
                 }
             }
             , 'test': {
                 'loss': '',
                 'accuracy': '',
-                'mse': []
+                'mse': [],
+                'confidence_score': {}
             }
         }
         if 'train_p' not in self.config:
@@ -167,7 +169,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                     f' || V Loss: {self.metrics["valid"]["epoch"]["loss"][-1]:.4f}'
                     f'| V Acc: {self.metrics["valid"]["epoch"]["accuracy"][-1]:.4f}'
                     f'| V MSE: {self.metrics["valid"]["epoch"]["mse"][-1]:.4f}'
-                    f'| CS: {confidence_score(predictions=torch.softmax(raw, dim=-1).detach().numpy(), labels=target.detach().numpy())}')
+                    f'| CS: {self.metrics["valid"]["epoch"]["confidence_score"][-1]}')
             if not CONFIG.DRY_RUN:
                 self.writer.add_scalar(tag='Train/epoch/loss', scalar_value=train_metrics_mean["loss"],
                                        global_step=epoch)
@@ -190,7 +192,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
     def run_test(self, test_loader, mode, step=None):
         metrics = {'loss': [], 'acc': [], 'mse': []}
-        logits_list, label_list = [],[]
+        logits_list, label_list = np.array([]),np.array([])
         for batch_idx, (data, target) in enumerate(test_loader):
             data, target = data.to(self.device), target.to(self.device)
             raw, logits = self(data)
@@ -201,16 +203,13 @@ class Model(nn.Module, metaclass=ABCMeta):
             metrics['mse'].append(
                 mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                           reduction='mean', device=self.device).item())
-            if mode =='test':
-                print(torch.max(torch.softmax(logits, dim=1), dim=1))
-                exit()
-                logits_list.append(torch.max(torch.softmax(logits, dim=1), dim=0))
-                label_list.append(np.ones(target.shape).flatten())
-        if mode=='test':
-            print(torch.max(torch.softmax(raw, 1)))
-            print(np.array(label_list).shape)
-            print(label_list.append(np.ones(target.shape) ))
-            exit()
+
+            if batch_idx==0:
+                logits_list= torch.softmax(logits, dim=1).detach().numpy()
+                label_list=target.detach().numpy()
+            else:
+                logits_list = np.vstack([logits_list, torch.softmax(logits, dim=1).detach().numpy()])
+                label_list = np.hstack([label_list, target.detach().numpy()])
 
         metrics_mean = {k: np.mean(v) for k, v in metrics.items()}
         if not CONFIG.DRY_RUN:
@@ -221,17 +220,18 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.metrics[mode]['epoch']['loss'].append(metrics_mean['loss'])
                 self.metrics[mode]['epoch']['accuracy'].append(metrics_mean['acc'])
                 self.metrics[mode]['epoch']['mse'].append(metrics_mean['mse'])
+                self.metrics[mode]['epoch']['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
             else:
                 self.metrics[mode]['loss'] = metrics_mean['loss']
                 self.metrics[mode]['accuracy'] = metrics_mean['acc']
                 self.metrics[mode]['mse'] = metrics_mean['mse']
+                self.metrics[mode]['confidence_score']=confidence_score(predictions=logits_list, labels=label_list)
 
         if mode == 'test':
-
             print(
                 f'Test | NLL Loss: {self.metrics["test"]["loss"]:.6f} | Acc: {self.metrics["test"]["accuracy"]:.4f} '
                 f'| MSE: {self.metrics["test"]["mse"]}'
-                f'| CS: {confidence_score(predictions=torch.softmax(raw, dim=-1).detach().numpy(), labels=target.detach().numpy())}')
+                f'| CS: {self.metrics["test"]["confidence_score"]}')
 
     def clean(self):
         self.writer.close()

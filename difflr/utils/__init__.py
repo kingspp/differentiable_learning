@@ -159,8 +159,8 @@ def confidence_score(predictions, labels):
     scores = {}
     for k,v in correct_indices.items():
         if len(v)>0:
-            scores[k]=round(float(np.max(predictions[v],1).mean().flatten()),2)
-    return scores, np.mean(list(scores.values()))
+            scores[str(k)]=round(float(np.max(predictions[v],1).mean().flatten()),2)
+    return scores, round(float(np.mean(list(scores.values()))),2)
 
 
 

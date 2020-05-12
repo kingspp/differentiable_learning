@@ -12,7 +12,7 @@ def main():
         "exp_dir":"/tmp/difflr",
         "num_classes": 10,
         'in_features': 32*32,
-        'epochs': 1,
+        'epochs': 10,
         'batch_size': 32,
         'lr': 1e-2,
         "train_p":1,

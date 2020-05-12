@@ -58,10 +58,11 @@ class Model(nn.Module, metaclass=ABCMeta):
                 }
             }
             , 'test': {
-                'loss': '',
-                'accuracy': '',
+                'loss': [],
+                'accuracy': [],
                 'mse': [],
-                'confidence_score': {}
+                'confidence_score': [],
+                'steps':[]
             }
         }
         if 'train_p' not in self.config:
@@ -84,13 +85,19 @@ class Model(nn.Module, metaclass=ABCMeta):
     def evaluate(self, data):
         pass
 
-    def run_train(self, train_loader, valid_loader, log_type, log_interval, batch_end_hook, epoch_end_hook,
-                  shape_printer_hook, early_stopper=None):
+    def run_train(self, train_loader, valid_loader, test_loader, log_type, log_interval, batch_end_hook, epoch_end_hook,
+                  shape_printer_hook,test_interval, early_stopper=None, ):
         self.train()
 
         dataiter = iter(train_loader)
         images, labels = dataiter.next()
-        self.writer.add_graph(self.to(self.device), images.to(self.device))
+        if CONFIG.DRY_RUN == False:
+            self.writer.add_graph(self.to(self.device), images.to(self.device))
+
+        if test_interval == -1:
+            print("Running test at the end of training")
+        else:
+            print(f"Running test for every {test_interval} epoch")
 
         print('Model: \n')
         print(self)
@@ -122,14 +129,14 @@ class Model(nn.Module, metaclass=ABCMeta):
                 raw, logits = self(data)
                 loss = F.nll_loss(logits, target, reduction='mean')
 
-                if 'dsc' in self.name:
-                    l2_reg = None
-                    for weight in self.edge_weights:
-                        if l2_reg is None:
-                            l2_reg = torch.sigmoid(weight).norm(2)
-                        else:
-                            l2_reg=l2_reg+ torch.sigmoid(weight).norm(2)
-                    loss= loss+ l2_reg * 0.1
+                # if 'dsc' in self.name:
+                #     l2_reg = None
+                #     for weight in self.edge_weights:
+                #         if l2_reg is None:
+                #             l2_reg = torch.sigmoid(weight).norm(2)
+                #         else:
+                #             l2_reg=l2_reg+ torch.sigmoid(weight).norm(2)
+                #     loss= loss+ l2_reg * 0.1
 
                 train_metrics['loss'].append(loss.item())
                 loss.backward(retain_graph=True)
@@ -183,6 +190,10 @@ class Model(nn.Module, metaclass=ABCMeta):
             if self.config["lr_decay"] is not False:
                 self.lr_scheduler.step(epoch=epoch)
 
+            if test_interval>0:
+                if epoch% test_interval==0:
+                    self.run_test(test_loader=test_loader, mode="test", step=epoch)
+
             # Early stopping
             if early_stopper is not None and early_stopper.step(self.metrics["valid"]["epoch"]["accuracy"][-1]):
                 print(f'Early Stopping this run after {epoch}')
@@ -222,21 +233,22 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.metrics[mode]['epoch']['mse'].append(metrics_mean['mse'])
                 self.metrics[mode]['epoch']['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
             else:
-                self.metrics[mode]['loss'] = metrics_mean['loss']
-                self.metrics[mode]['accuracy'] = metrics_mean['acc']
-                self.metrics[mode]['mse'] = metrics_mean['mse']
-                self.metrics[mode]['confidence_score']=confidence_score(predictions=logits_list, labels=label_list)
+                self.metrics[mode]['loss'].append(metrics_mean['loss'])
+                self.metrics[mode]['accuracy'].append(metrics_mean['acc'])
+                self.metrics[mode]['mse'].append(metrics_mean['mse'])
+                self.metrics[mode]['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
+                self.metrics[mode]['steps'].append(step)
         if mode == 'test':
             print(
-                f'Test | NLL Loss: {self.metrics["test"]["loss"]:.6f} | Acc: {self.metrics["test"]["accuracy"]:.4f} '
-                f'| MSE: {self.metrics["test"]["mse"]}'
-                f'| CS: {self.metrics["test"]["confidence_score"]}')
+                f'Test | NLL Loss: {self.metrics["test"]["loss"][-1]:.6f} | Acc: {self.metrics["test"]["accuracy"][-1]:.4f} '
+                f'| MSE: {self.metrics["test"]["mse"][-1]}'
+                f'| CS: {self.metrics["test"]["confidence_score"][-1]}')
 
     def clean(self):
         self.writer.close()
         self.writer = None
 
-    def fit(self, dataset, log_type='epoch', log_interval=1,
+    def fit(self, dataset, log_type='epoch', log_interval=1, test_interval=-1,
             batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None, early_stopper=None):
         if not CONFIG.DRY_RUN:
             self.writer = SummaryWriter(f'{self.exp_dir}/graphs')
@@ -252,9 +264,9 @@ class Model(nn.Module, metaclass=ABCMeta):
                                                                   'cuda') else False
                                                               )
             # Train and Valid
-            self.run_train(train_loader=train_loader, valid_loader=valid_loader, log_type=log_type,
+            self.run_train(train_loader=train_loader, valid_loader=valid_loader, test_loader=test_loader, log_type=log_type,
                            log_interval=log_interval, batch_end_hook=batch_end_hook, epoch_end_hook=epoch_end_hook,
-                           shape_printer_hook=shape_printer_hook, early_stopper=early_stopper)
+                           shape_printer_hook=shape_printer_hook, early_stopper=early_stopper, test_interval=test_interval)
             # Test
             self.run_test(test_loader=test_loader, mode="test")
             print(f"Took {self.metrics['time_elapsed']} seconds")

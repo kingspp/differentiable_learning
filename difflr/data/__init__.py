@@ -68,14 +68,14 @@ class MNISTDataset():
     def __new__(cls, batch_size=32, use_cuda=False, train_p=90, valid_p=10, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-        if isinstance(train_p, int):
+        if isinstance(train_p, int) or  isinstance(train_p, float):
             TRAIN_SAMPLES = int((cls.total_train_size * train_p) / 100)
             TRAIN_P = train_p
         else:
             TRAIN_SAMPLES = len(train_p)
             TRAIN_P = len(train_p) / cls.total_train_size * 100
 
-        if isinstance(valid_p, int):
+        if isinstance(valid_p, int) or isinstance(train_p, float):
             VALID_SAMPLES = int((cls.total_train_size * valid_p) / 100)
             VALID_P = valid_p
         else:
@@ -83,9 +83,9 @@ class MNISTDataset():
             VALID_P = len(valid_p) / cls.total_train_size * 100
 
         TEST_SAMPLES = int((cls.total_test_size * test_p) / 100)
-        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) or isinstance(train_p, float) else train_p)
         valid_sampler = SubsetRandomSampler(
-            range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
+            range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) or isinstance(train_p, float) else valid_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
             f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of {cls.total_train_size}) \n"
@@ -112,14 +112,14 @@ class FashionMNISTDataset():
     def __new__(cls, batch_size, use_cuda, train_p=90, valid_p=10, test_p=100, *args, **kwargs):
         kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-        if isinstance(train_p, int):
+        if isinstance(train_p, int) or isinstance(train_p, float):
             TRAIN_SAMPLES = int((cls.total_train_size * train_p) / 100)
             TRAIN_P = train_p
         else:
             TRAIN_SAMPLES = len(train_p)
             TRAIN_P = len(train_p) / cls.total_train_size * 100
 
-        if isinstance(valid_p, int):
+        if isinstance(valid_p, int) or isinstance(train_p, float):
             VALID_SAMPLES = int((cls.total_train_size * valid_p) / 100)
             VALID_P = valid_p
         else:
@@ -127,9 +127,9 @@ class FashionMNISTDataset():
             VALID_P = len(valid_p) / cls.total_train_size * 100
 
         TEST_SAMPLES = int((cls.total_test_size * test_p) / 100)
-        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) else train_p)
+        train_sampler = SubsetRandomSampler(range(0, TRAIN_SAMPLES) if isinstance(train_p, int) or isinstance(train_p, float) else train_p)
         valid_sampler = SubsetRandomSampler(
-            range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
+            range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) or isinstance(train_p, float) else valid_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
             f"FASHIONMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of {cls.total_train_size}) \n"

@@ -11,6 +11,8 @@ CONFIG.DRY_RUN = False
 def epoch_end_hook(model:LinearClassifierDSC):
     edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
     plot_information_transfer(model, edge_weights)
+    print(list([(i[0], torch.sigmoid(i[1]).sum()) for i in model.named_parameters() if 'edge' in i[0]]))
+    # exit()
 
 
 
@@ -21,15 +23,16 @@ def main():
         'model_name': 'mnist_dsc_ffn_10p_tanh_Train',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 10,
-        'batch_size': 256,
+        'epochs': 100,
+        'batch_size': 32,
         'lr': 1e-1,
-        "train_p":100,
+        # 'lr_decay': 1,
+        "train_p":10,
         "test_p":100,
         'dnn_config':
             {
 
-                'layers': [10, 10, 10]
+                'layers': [100, 50, 10]
             },
 
     }

@@ -12,15 +12,15 @@ def main():
         "exp_dir":"/tmp/difflr",
         "num_classes": 10,
         'in_features': 32*32,
-        'epochs': 10,
+        'epochs': 1,
         'batch_size': 32,
         'lr': 1e-2,
-        "train_p":10,
+        "train_p":1,
         "test_p":100,
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [40, 25, 10]
             }
     }
 

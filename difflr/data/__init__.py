@@ -88,9 +88,9 @@ class MNISTDataset():
                 range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
-                f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of 60000) \n"
-                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of 60000)\n"
-                f"Test on {TEST_SAMPLES} samples ({test_p}% of 10000)\n")
+                f"MNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of {cls.total_train_size}) \n"
+                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of {cls.total_train_size})\n"
+                f"Test on {TEST_SAMPLES} samples ({test_p}% of {cls.total_test_size})\n")
         train_loader = torch.utils.data.DataLoader(
                 datasets.MNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
                 batch_size=batch_size, sampler=train_sampler, **kwargs)
@@ -132,9 +132,9 @@ class FashionMNISTDataset():
                 range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
-                f"FASHIONMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of 60000) \n"
-                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of 60000)\n"
-                f"Test on {TEST_SAMPLES} samples ({test_p}% of 10000)\n")
+                f"FASHIONMNIST Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of {cls.total_train_size}) \n"
+                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of {cls.total_train_size})\n"
+                f"Test on {TEST_SAMPLES} samples ({test_p}% of {cls.total_test_size})\n")
         train_loader = torch.utils.data.DataLoader(
                 datasets.FashionMNIST(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
                 batch_size=batch_size, sampler=train_sampler, **kwargs)
@@ -178,9 +178,9 @@ class CIFARDataset():
                 range(TRAIN_SAMPLES, TRAIN_SAMPLES + VALID_SAMPLES) if isinstance(valid_p, int) else valid_p)
         test_sampler = SubsetRandomSampler(range(0, TEST_SAMPLES))
         print(
-                f"CIFAR-10 Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of 60000) \n"
-                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of 60000)\n"
-                f"Test on {TEST_SAMPLES} samples ({test_p}% of 10000)\n")
+                f"CIFAR-10 Dataset:\nTraining on {TRAIN_SAMPLES} samples ({TRAIN_P}% of {cls.total_train_size}) \n"
+                f"Valid on {VALID_SAMPLES} samples ({VALID_P}% of {cls.total_train_size})\n"
+                f"Test on {TEST_SAMPLES} samples ({test_p}% of {cls.total_test_size})\n")
         train_loader = torch.utils.data.DataLoader(
                 datasets.CIFAR10(DIFFLR_DATA_PATH, train=True, download=True, transform=transform),
                 batch_size=batch_size, sampler=train_sampler, **kwargs)
@@ -191,5 +191,5 @@ class CIFARDataset():
 
         test_loader = torch.utils.data.DataLoader(
                 datasets.CIFAR10(DIFFLR_DATA_PATH, train=False, transform=transform),
-                batch_size=batch_size, sampler=test_sampler, **kwargs)
+                batch_size=batch_size, **kwargs)
         return train_loader, valid_loader, test_loader

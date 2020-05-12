@@ -75,6 +75,9 @@ class Model(nn.Module, metaclass=ABCMeta):
         if 'lr_decay' not in self.config:
             self.config['lr_decay']=False
 
+        if 'optimizer' not in self.config:
+            self.config['optimizer']='adam'
+
     @abstractmethod
     def evaluate(self, data):
         pass
@@ -94,9 +97,13 @@ class Model(nn.Module, metaclass=ABCMeta):
         print('Summary: \n')
         summary(self, input_size=images.shape[1:])
         print('\n')
-        self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
-        # self.optimizer = optim.SGD(self.parameters(), lr=self.config['lr'])
 
+        if self.config['optimizer']=='adam':
+            self.optimizer = optim.Adam(self.parameters(), lr=self.config['lr'])
+        elif self.config['optimizer']=='sgd':
+            self.optimizer = optim.SGD(self.parameters(), lr=self.config['lr'])
+        else:
+            raise Exception(f"Unknown optimizer: {self.config['optimizer']}")
         if self.config["lr_decay"] is not False:
             self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer,
                                                                        gamma=self.config['lr_decay'])
@@ -112,6 +119,16 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.optimizer.zero_grad()
                 raw, logits = self(data)
                 loss = F.nll_loss(logits, target, reduction='mean')
+
+                if 'dsc' in self.name:
+                    l2_reg = None
+                    for weight in self.edge_weights:
+                        if l2_reg is None:
+                            l2_reg = torch.sigmoid(weight).norm(2)
+                        else:
+                            l2_reg=l2_reg+ torch.sigmoid(weight).norm(2)
+                    loss= loss+ l2_reg * 0.1
+
                 train_metrics['loss'].append(loss.item())
                 loss.backward(retain_graph=True)
                 self.optimizer.step()
@@ -173,6 +190,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
     def run_test(self, test_loader, mode, step=None):
         metrics = {'loss': [], 'acc': [], 'mse': []}
+        logits_list, label_list = [],[]
         for batch_idx, (data, target) in enumerate(test_loader):
             data, target = data.to(self.device), target.to(self.device)
             raw, logits = self(data)
@@ -183,6 +201,16 @@ class Model(nn.Module, metaclass=ABCMeta):
             metrics['mse'].append(
                 mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                           reduction='mean', device=self.device).item())
+            if mode =='test':
+                print(torch.max(torch.softmax(logits, dim=1), dim=1))
+                exit()
+                logits_list.append(torch.max(torch.softmax(logits, dim=1), dim=0))
+                label_list.append(np.ones(target.shape).flatten())
+        if mode=='test':
+            print(torch.max(torch.softmax(raw, 1)))
+            print(np.array(label_list).shape)
+            print(label_list.append(np.ones(target.shape) ))
+            exit()
 
         metrics_mean = {k: np.mean(v) for k, v in metrics.items()}
         if not CONFIG.DRY_RUN:
@@ -199,6 +227,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.metrics[mode]['mse'] = metrics_mean['mse']
 
         if mode == 'test':
+
             print(
                 f'Test | NLL Loss: {self.metrics["test"]["loss"]:.6f} | Acc: {self.metrics["test"]["accuracy"]:.4f} '
                 f'| MSE: {self.metrics["test"]["mse"]}'

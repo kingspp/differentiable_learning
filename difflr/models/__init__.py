@@ -68,7 +68,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             self.config['train_p'] = 90
             self.config['valid_p'] = 10
         elif 'valid_p' not in self.config:
-            self.config['valid_p'] = int(self.config['train_p'] * 0.1)
+            self.config['valid_p'] = float(self.config['train_p'] * 0.1)
             self.config['train_p'] = self.config['train_p'] - self.config['valid_p']
 
         if 'test_p' not in self.config:
@@ -226,7 +226,6 @@ class Model(nn.Module, metaclass=ABCMeta):
                 self.metrics[mode]['accuracy'] = metrics_mean['acc']
                 self.metrics[mode]['mse'] = metrics_mean['mse']
                 self.metrics[mode]['confidence_score']=confidence_score(predictions=logits_list, labels=label_list)
-
         if mode == 'test':
             print(
                 f'Test | NLL Loss: {self.metrics["test"]["loss"]:.6f} | Acc: {self.metrics["test"]["accuracy"]:.4f} '
@@ -301,7 +300,7 @@ class LinearClassifierGSC(Model):
         super().__init__(name='gsc_ffn', config=config)
         self.layers = nn.ModuleList([])
         self.relu_activation = torch.nn.ReLU()
-        self.softmax_activation = torch.nn.Softmax(dim=-1)
+        self.softmax_activation = torch.nn.LogSoftmax(dim=-1)
         self.concat_nodes = 0
         for e, node in enumerate(self.config['dnn_config']["layers"]):
             if e == 0:

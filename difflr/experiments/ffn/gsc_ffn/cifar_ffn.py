@@ -1,6 +1,6 @@
 import torch
 
-from difflr.models import LinearClassifierDSC
+from difflr.models import LinearClassifierGSC
 from difflr.data import CIFARDataset
 
 
@@ -24,7 +24,7 @@ def main():
             }
     }
 
-    model = LinearClassifierDSC(config=config)
+    model = LinearClassifierGSC(config=config)
     model.fit(dataset=CIFARDataset)
 
 

@@ -13,9 +13,9 @@ def main():
         "num_classes": 10,
         'in_features': 32*32,
         'epochs': 10,
-        'batch_size': 256,
+        'batch_size': 32,
         'lr': 1e-2,
-        "train_p":100,
+        "train_p":10,
         "test_p":100,
         'dnn_config':
             {

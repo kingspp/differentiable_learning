@@ -149,4 +149,18 @@ class CustomJsonEncoder(json.JSONEncoder):
                 return f'Object not serializable - {obj}'
 
 
+def confidence_score(predictions, labels):
+    correct_indices={l: [] for l in np.unique(labels)}
+
+    for e,(p, l) in enumerate(zip(predictions, labels)):
+        if np.argmax(p) == l:
+            correct_indices[l].append(e)
+
+    scores = {}
+    for k,v in correct_indices.items():
+        if len(v)>0:
+            scores[k]=round(float(np.max(predictions[v],1).mean().flatten()),2)
+    return scores, np.mean(list(scores.values()))
+
+
 

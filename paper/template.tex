@@ -1,4 +1,4 @@
-\usepackage{}\documentclass{article}
+\documentclass{article}
 
 % Package Declarations
 \usepackage{arxiv}
@@ -156,9 +156,32 @@ We propose Global Short Circuit architecture to explore the impact of skip conne
 \end{equation}
 \end{minipage}
 
-Experiments show that GSC performs better than standard architecture on large and minimal datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers. However, it suffers from an exponential increase in connections resulting in delayed training times. As the complexity of the network increases in terms of depth, we notice a rise in the number of stacked layers and is not scalable.
+Experiments show that GSC performs better than standard architecture on large and minimal datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers.
 
-Compared to the standard architecture, GSC has a considerable increase in the number of training parameters.  This is due to the effect of merge operation of previous $n-1$ layers for $n$th layer.
+% \begin{figure}[h!]
+% \centering
+% \includegraphics[scale=0.3]{paper/cscore_100p_param.png}
+% \caption{10p Data, 100p Model}
+% \label{fig:cscore_100p_model}
+% \end{figure}
+
+
+\noindent\begin{minipage}{.5\textwidth}
+   \centering
+   \includegraphics[scale=0.2]{paper/cscore_100p_param.png}
+   \captionof{figure}{10p Data, 100p Model}
+   \label{fig:cscore_100p_model.png}
+   \centering
+   \includegraphics[scale=0.2]{paper/cscore_10p_param.png}
+   \captionof{figure}{10p Data, 10p Model}
+   \label{fig:cscore_10p_model.png}
+\end{minipage}
+\begin{minipage}{.4\textwidth}
+\lipsum[6]
+\end{minipage}
+
+
+However, it suffers from an exponential increase in connections resulting in delayed training times. As the complexity of the network increases in terms of depth, we notice a rise in the number of stacked layers and is not scalable. Compared to the standard architecture, GSC has a considerable increase in the number of training parameters.  This is due to the effect of merge operation of previous $n-1$ layers for $n$th layer.
 
 \begin{equation}
 \label{eq:gsc_params}

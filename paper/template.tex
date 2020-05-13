@@ -1,4 +1,4 @@
-\documentclass{article}
+\usepackage{}\documentclass{article}
 
 % Package Declarations
 \usepackage{arxiv}
@@ -64,7 +64,7 @@
 \begin{abstract}
 The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as the later can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning \cite{He2016DeepRL} in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, \cite{Trask2018NeuralAL}, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
 
-In our experiments, we showcase that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that even with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture can build better representations with minimal data.
+In our experiments, we showcase that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture builds better representations with minimal data.
 \end{abstract}
 
 
@@ -86,7 +86,7 @@ Neural networks are differentiable by design. The standard architecture (\ref{ss
 
 \subsection{Feed Forward Neural Network}
 \label{sssec:ffn}
-Multilayer perceptron trained using back-propagation \cite{Rumelhart1986LearningIR}, a supervised learning algorithm are useful for their ability to solve the problems stochastically often approximating solutions for complex problems. Acting as a universal approximator, the architecture has a linear flow. The current layer take only the output of previous layer as input. Since the number of connections increase linearly based on the nodes in the layer, the architecture is scalable and time efficient. Figure \ref{fig:SimpleFFN.png} represents standard feed forward architecture and equation \ref{eq:ffn_math_representation} is the mathematical formulation of the network. Each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer. 
+Multilayer perceptron trained using back-propagation \cite{Rumelhart1986LearningIR}, a supervised learning algorithm are useful for their ability to solve the problems stochastically often approximating solutions for complex problems. Acting as a universal approximator, the architecture has a linear flow i.e a layer takes only the output of previous layer as input.A densely connected layer provides learning features from all the combinations of the features of the previous layer. As the number of connections increase linearly based on the nodes in the layer, the architecture is scalable and time efficient. $\hat{Z}$ in Equation \ref{eq:affine_transformation} is the result of an affine transformation and is capable of learning an offset ($\hat{b}$) and a rate of correlation ($\hat{W}$).
 
 \begin{equation}
 \label{eq:affine_transformation}
@@ -95,7 +95,7 @@ Multilayer perceptron trained using back-propagation \cite{Rumelhart1986Learning
 \end{aligned}
 \end{equation}
 
-A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to output of each node.
+This type of transformation can only learn linear relationships. In order to be capable of learning any non-linearity, a squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to output of each node. Sigmoid activation results in a probability as it restricts the range of the output between 0 and 1.
 
 \begin{equation}
 \label{eq:sigmoid_activation}
@@ -103,6 +103,8 @@ A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to
 \sigma(x) &= \frac{1}{1+e^{-x}} \;\;\;\;\;\;  x\in\mathbb{R}, 0<\sigma(x)<1
 \end{aligned}
 \end{equation}
+
+Figure \ref{fig:SimpleFFN.png} represents standard feed forward architecture and equation \ref{eq:ffn_math_representation} is the mathematical formulation of the network. Each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer. 
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering
@@ -121,7 +123,7 @@ A squashing non-linear transformation $\sigma$ \cite{Han1995TheIO} is applied to
 \end{equation}
 \end{minipage}
 
-The number of trainable parameters for a current layer is only a function of the layer's weight, bias and input. It can be represented as, 
+For the previously mentioned standard network, the number of trainable parameters for a current layer is only a function of the layer's weight, bias and input. It is represented as, 
 
 \begin{equation}
 \label{eq:ffn_params}
@@ -133,8 +135,6 @@ Params= \sum_{n=1}^{m}
 
 For a 3 layer network with node configurations [100,50,10] and 784 input features, using equation \ref{eq:ffn_params} we arrive at 83,550 trainable parameters
 
-
-\vspace{2em}
 
 \subsection{Global Short Circuit}
 We propose Global Short Circuit architecture to explore the impact of skip connection on representational capabilities of the network. There exists a connection from every layer to every other layer in the network. Few possible ways of merging layers are explored in DenseNet\cite{Li2018DenselyCC} and ResNet\cite{He2016DeepRL}. In ResNet weighted feature maps are merged using $max$ or $sum$. DenseNet merges feature using a concatenate operation. We define a merge operation similar to DenseNet's $concat$ style merge. However, this way of merge has an issue when it comes to Convolutional Neural Networks where there is a requirement to merge feature maps of different shapes. We use downsampling/padding operators to get identical shapes. Figure \ref{fig:GSC.png} shows standard architecture defined in section \ref{sssec:ffn} having connections from one layer to every other layer, merged using concat operation. The difference in the connections between the layers is relative to the number of gradient operations required for the respective layer. Equation \ref{eq:gsc_math_representation} provides mathematical representation of the architecture.
@@ -171,10 +171,7 @@ Params= \sum_{n=1}^{m}\left[
 For the previously mentioned 3 layer network, we have to train an exponential increase of 30\% i.e, 122,750 parameters.
 
 \subsection{Differentiable Short Circuit}
-\lipsum[6]
-\lipsum[6]
-\lipsum[6]
-\lipsum[6]
+We present Differentiable Short Circuit (DSC) to counter the effect of exponential increase in training parameters due to merge operation. It is done so by expressing a connection between layers as a weighted sigmoid gate. We introduce a connection weight $\hat{C}$, a trainable parameter whose gradients are updated by $\frac{\partial loss}{\partial \hat{C}}$. A change in the value of the connection weight affects the loss. Based on this we can use gradient descent algorithm to obtain local minima for loss for optimum values of connection weight. The direction and magnitude of the weight affects the performance of the network by introducing unwanted changes in the architecture. To check these effects we need a transformation function that is capable of restricting the direction and magnitude of the weight in a specified range. We choose sigmoid function defined in \ref{eq:sigmoid_activation} in place of a transformation function as it forces a restriction on the range of output. We can consider it
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering

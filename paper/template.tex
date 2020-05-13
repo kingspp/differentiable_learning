@@ -227,13 +227,16 @@ Params= \sum_{n=1}^{m}\left[
 \end{equation}
 The benefit of having trainable gates are of two folds,
 
-1. By keeping track of the variance of $\sigma{(\hat{C})}$ over times has proven to be useful  
+1. By keeping track of the variance of $\sigma{(\hat{C})}$ over time has proven to be useful in designing a stopping criterion, elucidated in section \ref{sub:InfoTransfer}
+
+2. Since the output of the gates are probabilistic in nature, we use a threshold function to transform continuous values to a binary mask. The mask is used to prune unwanted skip connections. Section \ref{sec:Pruning} describes the pruning methodology in detail.
 
 
 
 
 \subsubsection{Information Transfer}
-This work proposes \emph{Information transfer} (IT) as the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation 
+\label{sub:InfoTransfer}
+This work proposes \emph{Information transfer} (IT) as the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation translates to a scaling operation. Each output is scaled based on its significance before the same is fed to the next layer. The scaling transformation is also applied to skip connections as shown in figure \ref{fig:DSC.png}.
 
 \begin{minipage}{.45\textwidth}
     \centering
@@ -265,7 +268,7 @@ This work proposes \emph{Information transfer} (IT) as the percentage of measure
 \end{minipage}
 
 \subsubsection{Pruning}
-
+\label{sec:Pruning}
 To address the issue of exponential increase in trainable parameter due to merge operation in GSC, differentiable short circuit's trainable connection weights are used to selectively prune inessential nodes by removing connections.  If the current input is not important to the task, the value of $\hat{C_{i}}$ will be 0 and the current input information will not be passed on to the next layer. The input to the binary function ranges between 0 and 1. The probability of obtaining 0 or 1 for the binary function can be computed by,
 \begin{equation}
 \label{eq:ffn_math_representation}

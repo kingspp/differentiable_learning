@@ -216,11 +216,11 @@ class Model(nn.Module, metaclass=ABCMeta):
                           reduction='mean', device=self.device).item())
 
             if batch_idx==0:
-                logits_list= torch.softmax(logits, dim=1).detach().numpy()
-                label_list=target.detach().numpy()
+                logits_list= torch.softmax(logits, dim=1).cpu().detach().numpy()
+                label_list=target.cpu().detach().numpy()
             else:
-                logits_list = np.vstack([logits_list, torch.softmax(logits, dim=1).detach().numpy()])
-                label_list = np.hstack([label_list, target.detach().numpy()])
+                logits_list = np.vstack([logits_list, torch.softmax(logits, dim=1).cpu().detach().numpy()])
+                label_list = np.hstack([label_list, target.cpu().detach().numpy()])
 
         metrics_mean = {k: np.mean(v) for k, v in metrics.items()}
         if not CONFIG.DRY_RUN:

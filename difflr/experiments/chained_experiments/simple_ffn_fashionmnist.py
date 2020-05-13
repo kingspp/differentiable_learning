@@ -10,7 +10,7 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'simpleffn_mnist_10p_data_100p_params',
+        'model_name': 'simpleffn_fashion_mnist_10p_data_100p_params',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
@@ -32,7 +32,7 @@ def main():
     model.fit(dataset=FashionMNISTDataset, test_interval=1)
 
     config = {
-        'model_name': 'simpleffn_mnist_10p_data_10p_params',
+        'model_name': 'simpleffn_fashion_mnist_10p_data_10p_params',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,

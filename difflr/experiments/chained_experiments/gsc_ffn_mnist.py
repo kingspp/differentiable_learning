@@ -10,12 +10,12 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'gscffn_mnist_10p_data_100p_params',
+        'model_name': 'gscffn_mnist_10p_data_100p_params_lr1e2',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-1,
+        'lr': 1e-2,
         'lr_decay': False,
         "train_p": 10,
         "test_p": 100,
@@ -32,12 +32,12 @@ def main():
     model.fit(dataset=MNISTDataset, test_interval=1)
 
     config = {
-        'model_name': 'gscffn_mnist_10p_data_10p_params_lr1e1',
+        'model_name': 'gscffn_mnist_10p_data_10p_params_lr1e2',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-1,
+        'lr': 1e-2,
         'lr_decay': False,
         "train_p": 10,
         "test_p": 100,

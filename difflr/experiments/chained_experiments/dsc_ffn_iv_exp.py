@@ -7,7 +7,7 @@ from difflr.data import MNISTDataset, CIFARDataset, FashionMNISTDataset
 CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):
-    edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
+    edge_weights = [torch.sigmoid(param[1]).cpu().detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
     _, overall_transfer = plot_information_transfer(model, edge_weights)
     if 'iv' not in model.metrics:
         model.metrics['iv'] = [overall_transfer]

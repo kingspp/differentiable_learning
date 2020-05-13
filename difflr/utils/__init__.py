@@ -59,6 +59,9 @@ def plot_information_transfer(model, weights, display=True, debug=False):
         node_table.add_row([f"L{e + 1}", *list(nodes[f"L{e + 1}"].values())])
         weight_table.add_row([f"L{e + 1}", *list(_weights[f"L{e + 1}"].values())])
 
+    overall_transfer = np.mean([np.mean(w) for w in weights])
+    print('Overall Transfer: ', overall_transfer)
+
     if debug:
         print("\nNodes:")
         print(node_table)
@@ -67,7 +70,7 @@ def plot_information_transfer(model, weights, display=True, debug=False):
         print('\nInformation Transfer:')
         print(weight_table)
 
-    return weight_table
+    return weight_table, overall_transfer
 
 
 def mse_score(logits, target, num_classes, reduction=None, device=torch.device('cpu')):

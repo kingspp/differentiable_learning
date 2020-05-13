@@ -10,7 +10,11 @@ CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):
     edge_weights = [torch.sigmoid(param[1]).detach().numpy() for param in model.named_parameters() if 'edge-weights-' in param[0]]
-    plot_information_transfer(model, edge_weights)
+    _, overall_transfer = plot_information_transfer(model, edge_weights)
+    if 'iv' not in model.metrics:
+        model.metrics['iv'] = [overall_transfer]
+    else:
+        model.metrics['iv'].append(overall_transfer)
 
 
 

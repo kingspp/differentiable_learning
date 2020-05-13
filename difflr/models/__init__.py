@@ -91,7 +91,7 @@ class Model(nn.Module, metaclass=ABCMeta):
 
         dataiter = iter(train_loader)
         images, labels = dataiter.next()
-        if CONFIG.DRY_RUN == False:
+        if not CONFIG.DRY_RUN:
             self.writer.add_graph(self.to(self.device), images.to(self.device))
 
         if test_interval == -1:
@@ -227,17 +227,17 @@ class Model(nn.Module, metaclass=ABCMeta):
             self.writer.add_scalar(f'{mode}/loss', metrics_mean['loss'], global_step=step)
             self.writer.add_scalar(f'{mode}/accuracy', metrics_mean['acc'], global_step=step)
             self.writer.add_scalar(f'{mode}/mse', metrics_mean['mse'], global_step=step)
-            if mode == 'valid':
-                self.metrics[mode]['epoch']['loss'].append(metrics_mean['loss'])
-                self.metrics[mode]['epoch']['accuracy'].append(metrics_mean['acc'])
-                self.metrics[mode]['epoch']['mse'].append(metrics_mean['mse'])
-                self.metrics[mode]['epoch']['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
-            else:
-                self.metrics[mode]['loss'].append(metrics_mean['loss'])
-                self.metrics[mode]['accuracy'].append(metrics_mean['acc'])
-                self.metrics[mode]['mse'].append(metrics_mean['mse'])
-                self.metrics[mode]['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
-                self.metrics[mode]['steps'].append(step)
+        if mode == 'valid':
+            self.metrics[mode]['epoch']['loss'].append(metrics_mean['loss'])
+            self.metrics[mode]['epoch']['accuracy'].append(metrics_mean['acc'])
+            self.metrics[mode]['epoch']['mse'].append(metrics_mean['mse'])
+            self.metrics[mode]['epoch']['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
+        else:
+            self.metrics[mode]['loss'].append(metrics_mean['loss'])
+            self.metrics[mode]['accuracy'].append(metrics_mean['acc'])
+            self.metrics[mode]['mse'].append(metrics_mean['mse'])
+            self.metrics[mode]['confidence_score'].append(confidence_score(predictions=logits_list, labels=label_list))
+            self.metrics[mode]['steps'].append(step)
         if mode == 'test':
             print(
                 f'Test | NLL Loss: {self.metrics["test"]["loss"][-1]:.6f} | Acc: {self.metrics["test"]["accuracy"][-1]:.4f} '
@@ -245,8 +245,9 @@ class Model(nn.Module, metaclass=ABCMeta):
                 f'| CS: {self.metrics["test"]["confidence_score"][-1]}')
 
     def clean(self):
-        self.writer.close()
-        self.writer = None
+        if not CONFIG.DRY_RUN:
+            self.writer.close()
+            self.writer = None
 
     def fit(self, dataset, log_type='epoch', log_interval=1, test_interval=-1,
             batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None, early_stopper=None):

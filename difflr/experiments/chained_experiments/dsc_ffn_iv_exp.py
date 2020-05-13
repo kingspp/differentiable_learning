@@ -4,6 +4,8 @@ from difflr.utils import plot_information_transfer
 from difflr.models import LinearClassifierDSC
 from difflr.data import MNISTDataset, CIFARDataset, FashionMNISTDataset
 
+from torch_pruning import prune_linear
+
 CONFIG.DRY_RUN = False
 
 def epoch_end_hook(model:LinearClassifierDSC):

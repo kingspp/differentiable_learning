@@ -20,13 +20,13 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'mnist_dsc_ffn_10p_data_100p_params_1e-1',
+        'model_name': 'mnist_dsc_ffn_10p_data_100p_params_1e-3',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-1,
-        'lr_decay': 1,
+        'lr': 1e-3,
+        # 'lr_decay': 1,
         "train_p":10,
         "test_p":100,
         'dnn_config':
@@ -43,13 +43,13 @@ def main():
     model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook)
 
     config = {
-        'model_name': 'fashion_mnist_dsc_ffn_10p_data_100p_params_1e-1',
+        'model_name': 'fashion_mnist_dsc_ffn_10p_data_100p_params_1e-3',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-1,
-        'lr_decay': 1,
+        'lr': 1e-3,
+        # 'lr_decay': 1,
         "train_p": 10,
         "test_p": 100,
         'dnn_config':
@@ -66,13 +66,13 @@ def main():
     model.fit(dataset=FashionMNISTDataset, epoch_end_hook=epoch_end_hook)
 
     config = {
-        'model_name': 'cifar_dsc_ffn_10p_data_100p_params_1e-1',
+        'model_name': 'cifar_dsc_ffn_10p_data_100p_params_1e-3',
         "num_classes": 10,
         'in_features': 1024,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-1,
-        'lr_decay': 1,
+        'lr': 1e-3,
+        # 'lr_decay': 1,
         "train_p": 10,
         "test_p": 100,
         'dnn_config':

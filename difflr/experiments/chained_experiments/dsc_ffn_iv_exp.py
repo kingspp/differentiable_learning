@@ -19,66 +19,66 @@ def epoch_end_hook(model:LinearClassifierDSC):
 def main():
     torch.manual_seed(0)
 
+    # config = {
+    #     'model_name': 'mnist_dsc_ffn_10p_data_100p_params_1e-3',
+    #     "num_classes": 10,
+    #     'in_features': 784,
+    #     'epochs': 100,
+    #     'batch_size': 32,
+    #     'lr': 1e-3,
+    #     # 'lr_decay': 1,
+    #     "train_p":10,
+    #     "test_p":100,
+    #     'dnn_config':
+    #         {
+    #
+    #             'layers': [100, 50, 10]
+    #         },
+    #     'early_stopping': True,
+    #     'patience': 5
+    # }
+    #
+    # model = LinearClassifierDSC(config=config)
+    # epoch_end_hook(model)
+    # model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook)
+    #
+    # config = {
+    #     'model_name': 'fashion_mnist_dsc_ffn_10p_data_100p_params_1e-3',
+    #     "num_classes": 10,
+    #     'in_features': 784,
+    #     'epochs': 100,
+    #     'batch_size': 32,
+    #     'lr': 1e-3,
+    #     # 'lr_decay': 1,
+    #     "train_p": 10,
+    #     "test_p": 100,
+    #     'dnn_config':
+    #         {
+    #
+    #             'layers': [100, 50, 10]
+    #         },
+    #     'early_stopping': True,
+    #     'patience': 5
+    # }
+    #
+    # model = LinearClassifierDSC(config=config)
+    # epoch_end_hook(model)
+    # model.fit(dataset=FashionMNISTDataset, epoch_end_hook=epoch_end_hook)
+
     config = {
-        'model_name': 'mnist_dsc_ffn_10p_data_100p_params_1e-3',
-        "num_classes": 10,
-        'in_features': 784,
-        'epochs': 100,
-        'batch_size': 32,
-        'lr': 1e-3,
-        # 'lr_decay': 1,
-        "train_p":10,
-        "test_p":100,
-        'dnn_config':
-            {
-
-                'layers': [100, 50, 10]
-            },
-        'early_stopping': True,
-        'patience': 5
-    }
-
-    model = LinearClassifierDSC(config=config)
-    epoch_end_hook(model)
-    model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook)
-
-    config = {
-        'model_name': 'fashion_mnist_dsc_ffn_10p_data_100p_params_1e-3',
-        "num_classes": 10,
-        'in_features': 784,
-        'epochs': 100,
-        'batch_size': 32,
-        'lr': 1e-3,
-        # 'lr_decay': 1,
-        "train_p": 10,
-        "test_p": 100,
-        'dnn_config':
-            {
-
-                'layers': [100, 50, 10]
-            },
-        'early_stopping': True,
-        'patience': 5
-    }
-
-    model = LinearClassifierDSC(config=config)
-    epoch_end_hook(model)
-    model.fit(dataset=FashionMNISTDataset, epoch_end_hook=epoch_end_hook)
-
-    config = {
-        'model_name': 'cifar_dsc_ffn_10p_data_100p_params_1e-3',
+        'model_name': 'cifar_dsc_ffn_10p_data_100p_params_1e-1_mod',
         "num_classes": 10,
         'in_features': 1024,
         'epochs': 100,
         'batch_size': 32,
-        'lr': 1e-3,
-        # 'lr_decay': 1,
+        'lr': 1e-1,
+        'lr_decay': 1,
         "train_p": 10,
         "test_p": 100,
         'dnn_config':
             {
 
-                'layers': [100, 50, 10]
+                'layers': [150, 60, 10]
             },
         'early_stopping': True,
         'patience': 5

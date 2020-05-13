@@ -60,14 +60,12 @@ def plot_information_transfer(model, weights, display=True, debug=False):
         weight_table.add_row([f"L{e + 1}", *list(_weights[f"L{e + 1}"].values())])
 
     overall_transfer = np.mean([np.mean(w) for w in weights])
-    print('Overall Transfer: ', overall_transfer)
-
     if debug:
         print("\nNodes:")
         print(node_table)
 
     if display:
-        print('\nInformation Transfer:')
+        print(f'\nInformation Transfer: {overall_transfer:.4f}')
         print(weight_table)
 
     return weight_table, overall_transfer

@@ -64,7 +64,7 @@
 \maketitle
 
 \begin{abstract}
-The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as the later can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning \cite{He2016DeepRL} in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, \cite{Trask2018NeuralAL}, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
+The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as the later can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
 
 In our experiments, we show that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture builds better representations with minimal data.
 \end{abstract}
@@ -254,17 +254,14 @@ This work proposes \emph{Information transfer} (IT) as the percentage of measure
 \end{minipage}
 
 
-\begin{minipage}{.45\textwidth}
-    \centering
-    \includegraphics[scale=0.13]{SampleTable.png}
-    \captionof{figure}{Sample Information Transfer Table}
-    \label{fig:DSC.png}
+\begin{minipage}{.4\textwidth}
+    \lipsum[6]
 \end{minipage}
-\begin{minipage}{.45\textwidth}
+\begin{minipage}{.5\textwidth}
     \centering
-    \includegraphics[scale=0.13]{iv.png}
-    \captionof{figure}{Sample Information Transfer Table}
-    \label{fig:DSC.png}
+    \includegraphics[scale=0.25]{paper/iv.png}
+    \captionof{figure}{Information Transfer Rate vs Accuracy}
+    \label{fig:iv.png}
 \end{minipage}
 
 \subsubsection{Pruning}
@@ -312,7 +309,7 @@ With the implementation of straight through estimator, the model parameters can 
    instructions3\;
   }
  }
- \caption{Dependency based Pruning}
+ \caption{Dependency based pruning}
 \end{algorithm}
 
 \end{minipage}

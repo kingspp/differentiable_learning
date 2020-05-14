@@ -18,13 +18,13 @@ def main():
     torch.manual_seed(0)
 
     config = {
-        'model_name': 'fashion_mnist_dsc_ffn_10p_10pTrain',
+        'model_name': 'fashion_mnist_dsc_ffn_100p_10pTrain',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 10,
         'batch_size': 256,
-        'lr': 1e-1,
-        "train_p": 10,
+        'lr': 0.01,
+        "train_p": 100,
         "test_p": 100,
         'dnn_config':
             {

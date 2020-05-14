@@ -160,15 +160,7 @@ This work proposes the Global Short Circuit architecture to explore the impact o
 \end{equation}
 \end{minipage}
 
-We conduct to experiments show GSC performs better than standard architecture on various datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access to every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers. To advocate that the proposed method - GSC creates much deeper constructs than standard architecture, the class confidence of the predictions is measured. Confidence score is unique for each class and the use of \emph{Softmax} function restricts the score between 0 and 1. At the end of each epoch, mean of class confidence score is calculated across a large unseen test set. This measure speaks for the trust in the prediction. Among the variable factors of the measure, the rate of increase and the actual value are vital for the analysis. MNIST \cite{LeCun1998GradientbasedLA}, Fashion-MNIST \cite{Xiao2017FashionMNISTAN}, CIFAR-10 datasets \cite{Krizhevsky2009LearningML} are chosen to account for the variability in the pattern complexity. The training samples are restricted to 10\% of the whole, while still maintaining a large test sample to test the described hypothesis. Figure \ref{fig:cscore_100p_model.png} shows the performance when the architectures across standard and GSC are the same, which leads to a 30\% increase in the trainable parameters due to merge operation. To rule out the difference in the trainable parameters as a reason for achieving high confidence scores, we introduce 10p variant. In 10p architecture, the architecture across the models vary but the number of trainable parameters are kept constant across the networks. The performance of 10p architectures are shown in Figure \ref{fig:cscore_10p_model.png}.  
-
-% \begin{figure}[h!]
-% \centering
-% \includegraphics[scale=0.3]{paper/cscore_100p_param.png}
-% \caption{10p Data, 100p Model}
-% \label{fig:cscore_100p_model}
-% \end{figure}
-
+We conduct to experiments show GSC performs better than standard architecture on various datasets. This is due to increased representational capacity of the network. A layer \emph{n} in the network now has access to every other \emph{n-1} previous outputs. This change paves way to create much deeper constructs and complex relationships among the layers. To advocate that the proposed method - GSC creates much deeper constructs than standard architecture, the class confidence of the predictions is measured. Confidence score is unique for each class and the use of \emph{Softmax} function restricts the score between 0 and 1. At the end of each epoch, mean of class confidence score is calculated across a large unseen test set. This measure speaks for the trust in the prediction. Among the variable factors of the measure, the rate of increase and the actual value are vital for the analysis. MNIST \cite{LeCun1998GradientbasedLA}, Fashion-MNIST \cite{Xiao2017FashionMNISTAN}, CIFAR-10 datasets \cite{Krizhevsky2009LearningML} are chosen to account for the variability in the pattern complexity. The training samples are restricted to 10\% of the whole, while still maintaining a large test sample to test the described hypothesis. Figure \ref{fig:cscore_100p_model.png} shows the performance when the architectures across standard and GSC are the same, which leads to a 30\% increase in the trainable parameters due to merge operation. To rule out the difference in the trainable parameters as a reason for achieving high confidence scores, we create 10p architectures. Here, the architecture across the models vary but the number of trainable parameters are kept constant across all architectures(FeedForward, GSC, DSC). The performance of 10p architectures are shown in Figure \ref{fig:cscore_10p_model.png}.  
 
 \noindent\begin{minipage}{.5\textwidth}
    \centering
@@ -181,11 +173,11 @@ We conduct to experiments show GSC performs better than standard architecture on
    \label{fig:cscore_10p_model.png}
 \end{minipage}
 \begin{minipage}{.4\textwidth}
-In figure \ref{fig:cscore_100p_model.png} the difference in the confidence score between that of the standard architecture and GSC is negligable. This is due to the lack of complex patterns across classes in MNIST dataset. Hence, there's a slight difference in the score on Fashion MNIST and a major jump on CIFAR-10. CIFAR-10 comprises of 10 classes of real-world complex object patterns and GSC architecture enables the model to create much deeper constructs compared to the standard architecure. We notice a similar behaviour in the confidence measure across 10p architectures where the number of trainable parameters across the networks is kept constant.
+In figure \ref{fig:cscore_100p_model.png} the difference in the confidence score between that of the standard architecture and GSC is negligable. This is due to the lack of complex patterns across classes in MNIST dataset. Hence, there's a slight difference in the score on Fashion MNIST and a major jump on CIFAR-10. CIFAR-10 comprises of 10 classes of real-world complex object patterns and GSC architecture enables the model to create much deeper constructs compared to the standard architecture. We notice a similar behaviour in the confidence measure across 10p architectures where the number of trainable parameters across the networks is kept constant.
 \end{minipage}
 
 
-However, GSC suffers from an exponential increase in connections resulting in delayed training time. A rise in the number of stacked layers is noticed with the increase in the complexity of the network in terms of depth, which is not scalable. Compared to the standard architecture, GSC has a considerable increase in the number of training parameters. This is due to the effect of merge operation of previous $n-1$ layers for $n$th layer.
+However, GSC suffers from an exponential increase in connections resulting in delayed training time. A rise in the number of stacked layers is noticed with the increase in the complexity of the network in terms of depth, which is not scalable. Compared to the standard architecture, GSC has a considerable increase in the number of training parameters. This is due to the effect of merge operation of previous $n-1$ layers for every $n$th layer.
 
 \begin{equation}
 \label{eq:gsc_params}
@@ -198,7 +190,7 @@ Params= \sum_{n=1}^{m}\left[
 For the aforementioned 3 layer network, an exponential increase of 30\% i.e, 122,750 parameters has to be trained.
 
 \subsection{Differentiable Short Circuit}
-This work proposes Differentiable Short Circuit (DSC) to counter the effect of exponential increase in training parameters due to merge operation. It is done so by expressing a connection between layers as a weighted sigmoid gate. We introduce a connection weight $\hat{C}$, a trainable parameter whose gradients are updated by $\frac{\partial loss}{\partial \hat{C}}$. A change in the value of the connection weight affects the loss. Based on this, a gradient descent algorithm can be used to obtain local minima for loss for optimum values of connection weight. The direction and magnitude of the weight affects the performance of the network by introducing unwanted changes in the architecture. In order to check these effects, a transformation function that is capable of restricting the direction and magnitude of the weight in a specified range is used. Neural arithmetic logic unit \cite{Trask2018NeuralAL} propose a layer whose transformation matrix $\hat{W}$ consists just of -1's, 0's and 1's. In order to prevent the layer from changing the scale of the representation of the numbers when mapping the input to the output, a squashing non-linearity ($\sigma$) is applied on just the weights, $\hat{W}$.  Hence, a sigmoid function, defined in equation \ref{eq:sigmoid_activation}, is chosen over a transformation function for $\hat{C}$. As it forces a restriction on the range of output, it also helps in preserving the direction of the input. Figure \ref{fig:DSC.png} shows the use of connection weights applied for the results of concat operation, essentially keeping the connection in check before it is fed to the next layer. The difference in representation of connections between various blocks and the gradient operations shows the number of gradient computations required for the layer or the operation. Equations \ref{eq:dsc_math_representation} provides mathematical representation of the network.
+Finally, we proposes Differentiable Short Circuit (DSC) to counter the effect of exponential increase in training parameters due to merge operation. It is done so by expressing a connection between layers as a weighted sigmoid gate. We introduce a connection weight $\hat{C}$, a trainable parameter whose gradients are updated by $\frac{\partial loss}{\partial \hat{C}}$. A change in the value of the connection weight affects the loss. Based on this, we use gradient descent algorithm to obtain optimum values of connection weight. The direction and magnitude of the weight affects the performance of the network by introducing unwanted changes in the architecture. In order to check these effects, a transformation function that is capable of restricting the direction and magnitude of the weight in a specified range is used. Neural arithmetic logic unit \cite{Trask2018NeuralAL} propose a layer whose transformation matrix $\hat{W}$ consists just of -1's, 0's and 1's. In order to prevent the layer from changing the scale of the representation of the numbers when mapping the input to the output, a squashing non-linearity ($\sigma$) is applied on just the weights, $\hat{W}$.  Hence, a sigmoid function, defined in equation \ref{eq:sigmoid_activation}, is applied on $\hat{C}$. Along with forcing the range of output to be in a specific interval, it also helps in preserving the direction of the input. Figure \ref{fig:DSC.png} shows the use of connection weights applied for the results of concat operation, essentially keeping the connection in check before it is fed to the next layer. The difference in representation of connections between various blocks and the gradient operations shows the number of gradient computations required for the layer or the operation. Equations \ref{eq:dsc_math_representation} provides mathematical representation of the network.
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering
@@ -238,14 +230,14 @@ The benefit of having trainable gates are of two folds,
 
 \subsubsection{Information Transfer Rate}
 \label{sub:InfoTransfer}
-This work proposes \emph{Information transfer rate} (ITR) as the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation translates to a scaling operation. Each output is scaled based on its significance before the same is fed to the next layer. The scaling transformation is also applied to skip connections as shown in figure \ref{fig:DSC.png}. Equation \ref{eq:itr} describes the rate of information transfer from one layer to the next. 
+We also propose \emph{Information transfer rate} (ITR). It is the percentage of measure of data flow from one layer to the next. The gated connections having sigmoid activation translates to a scaling operation. Each output is scaled based on its significance before the same is fed to the next layer. The scaling transformation is also applied to skip connections as shown in figure \ref{fig:DSC.png}. Equation \ref{eq:itr} describes the rate of information transfer from one layer to the next. 
 
     \begin{equation}
     \label{eq:itr}
     \begin{aligned}
-    itr_{layer} &=\frac{\sum_{c=1}^{N}\hat{W}_{c}}{\sum_{c=1}^{N}|\hat{W}_{c}|}, \\
+    itr_{layer} &=\frac{\sum_{c=1}^{N}\hat{W}_{c}}{|\hat{W}_{c}|}, \\
     \\
-    \text{where}~N &= \text{Number of layers,} \\
+    \text{where}~N &= \text{Number of nodes,} \\
     \hat{W}_{c} &= \text{Connection weight}\\
     |\hat{W}_{c}| &= \text{Length of connection weight}\\
 \end{aligned}
@@ -253,17 +245,28 @@ This work proposes \emph{Information transfer rate} (ITR) as the percentage of m
 
 To calculate the information transfer of the network, based on the number of layers and their respective information transfer rates, we propose Equation \ref{eq:itr_mean}.  It is a conditional mean as there are no recurrent associations and connections are always \emph{unidirectional}
 
+
+
+
+\noindent\begin{minipage}{.45\textwidth}
+   \centering
+   \includegraphics[scale=0.13]{paper/SampleTable.png}
+   \captionof{figure}{Sample Infromation Transfer}
+   \label{fig:DSC.png}
+\end{minipage}
+\begin{minipage}{.45\textwidth}
 \begin{equation}
 \label{eq:itr_mean}
 \begin{aligned}
 itr_{network} &= \frac{\sum_{i=0}^{n-1}\sum_{j=1}^{n} 
 \begin{cases}
-  itr_{ij}, & \text{if}\ i>j \\
+  itr_{ij}, & \text{if}\ i<j \\
   0, & \text{otherwise}
 \end{cases}}{\frac{n(n+1)}{2}}\\
 \text{where}~n &= \text{Number of layers} \\
 \end{aligned}
 \end{equation}
+\end{minipage}
 
 
 \begin{minipage}{.4\textwidth}
@@ -278,7 +281,7 @@ Figure \ref{fig:iv.png} shows that over time, the number of features picked by t
 
 \subsubsection{Pruning}
 \label{sec:Pruning}
-To address the issue of exponential increase in trainable parameter due to merge operation in GSC, differentiable short circuit's trainable connection weights are used to selectively prune inessential nodes by removing connections.  If the current input is not important to the task, the value of $\hat{C_{i}}$ will be 0 and the current input information will not be passed on to the next layer. The input to the binary function ranges between 0 and 1. The probability of obtaining 0 or 1 for the binary function can be computed by,
+To address the issue of exponential increase in trainable parameters due to merge operation in GSC, differentiable short circuit's trainable connection weights are used to selectively prune inessential nodes by removing connections.  If the current input is not important to the task, the value of $\hat{C_{i}}$ will be 0 and the current input information will not be passed on to the next layer. The input to the binary function ranges between 0 and 1. The probability of obtaining 0 or 1 for the binary function can be computed by,
 \begin{equation}
 \label{eq:ffn_math_representation}
 \begin{aligned}
@@ -295,13 +298,13 @@ With the implementation of straight through estimator, the model parameters can 
 \noindent\begin{minipage}{.5\textwidth}
    \centering
    \includegraphics[scale=0.1]{paper/Pruning1.png}
-   \captionof{figure}{10p Data, 100p Model}
+   \captionof{figure}{2-Layer DSC architecture}
 %   \label{fig:cscore_100p_model.png}
 \end{minipage}
 \begin{minipage}{.4\textwidth}
 \centering
    \includegraphics[scale=0.09]{paper/Pruning2.png}
-   \captionof{figure}{10p Data, 10p Model}
+   \captionof{figure}{Pruned connections}
 %   \label{fig:c.score_10p_model.png}
 \end{minipage}
 
@@ -339,22 +342,12 @@ i \leftarrow \textit{Number of layers}
 
 \end{minipage}
 \begin{minipage}{.4\textwidth}
-In the first for loop we iterate the network layer wise and collect nodes falling under prune criteria and store it in \var{prune nodes}. \newline We then reverse iterate the network to change layer weights, biases and connection weights based on \var{prune nodes}\newline\newline
-The pruner function takes a layer and the corresponding prune indices and calculates new layer dimensions. It also clones the layer weights, layer bias, connection weights and extracts appropriate indices to match the layer dimensions of the new layer. Finally these new set of parameters are assigned to layer created in the previous step.
+In the first for loop we iterate the network layer wise and collect nodes falling under prune criteria and store it in $prune$ $nodes$. We then reverse iterate the network to change layer weights, biases and connection weights based on $prune$ $nodes$. 
+\par% 
+\bigskip
+The $prune$ function takes a layer and the corresponding prune indices and calculates new layer dimensions. It also clones the layer weights, layer bias, connection weights and extracts appropriate indices to match the layer dimensions of the new layer. Finally these new set of parameters are assigned to layer created in the previous step.
 \end{minipage}
 
-
-
-
-
-
-
-% \begin{figure}[h!]
-% \centering
-% \includegraphics[scale=0.1]{Pruning.png}
-% \caption{Pruning}
-% \label{fig:infotransfer}
-% \end{figure}
 
 \section{Experiments}
 \label{sec:experiments}
@@ -427,6 +420,13 @@ DSC            & 17378          & 17378                  & 27838             \\ 
 
 \subsection{100p Data - Large Training Data, Large Test Data}
 
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{paper/100p_runs.png}
+\caption{100p Train comparison}
+\label{fig:infotransfer}
+\end{figure}
+
 \begin{table}[H]
 \centering
 \begin{tabular}{llllll}
@@ -455,17 +455,18 @@ DSC            & 17378          & 17378                  & 27838             \\ 
 
 
 
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.4]{paper/100p_runs.png}
-\caption{100p Train comparison}
-\label{fig:infotransfer}
-\end{figure}
 
 
 
 
 \subsection{10p Data - Minimal Training Data, Large Test Data}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{paper/10p_runs.png}
+\caption{10p Train comparison}
+\label{fig:infotransfer}
+\end{figure}
+
 
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
@@ -496,55 +497,39 @@ DSC            & 17378          & 17378                  & 27838             \\ 
 \end{table}
 
 
+
+
+
 \subsection{Understanding connection weights ($\hat{C}$)}
 To comprehend the nature of gated connections, we create thresholded heatmaps of the weights. This is possible since connection weight is a function of $\sigma$ and only skip connections from Input to every other layer is considered. Figure \ref{fig:mnist_vis} and \ref{fig:fashion_mnist_vis} represents connection weights from input to the other three layers defined in section \ref{sec:}. The borders of the input do not contain any valuable information and the network learns to discard these connections over time. The model learns to drop common features among different classes and this reduces class ambiguity and thereby increasing the confidence score of a class. The mean utilization of inputs represents the common used pixels across different class and layers with high importance.
 
+\begin{figure}[H]
 \centering
 \includegraphics[scale=0.2]{paper/mnist_vis.png}
 \captionof{figure}{MNIST Dataset}
 \label{fig:mnist_vis}
+\end{figure}
 
+\begin{figure}[H]
 \centering
 \includegraphics[scale=0.2]{paper/fashionmnist_vis.png}
 \captionof{figure}{Fashion MNIST Dataset}
 \label{fig:fashion_mnist_vis}
-
+\end{figure}
 
 \section{Conclusion}
 
+Our work establishes the usefulness of global short circuits to improve the performance of the network by enabling the model to develop much deeper constructs compared to the standard architecture. We elucidate issues with global short circuit and propose differentiable short circuit as a solution. Differentiable short circuit builds upon GSC  with the goal of scalability. DSC archiecture with the help of connection weights brings in innovations such as Information Transfer Rate, Pruning, Layer intake visualization among others. The architecture achieves the top accuracy in fewer iterations compared to standard architecture and GSC across all datasets. 
+
+From our experiments we can conclude that DSC reduces model overfit, achieves high training accuracy while still maintaing a relatively high test accuracy. As a counter to the argument - increase in the trainable parameters is solely reponsible to the increase in performance, we design and test a relatively smaller network without deteriorating the performance of the original network. Added benefit is that our proposed method is capable of learning at much faster pace ($learning rate > 0.1$) and with the optimal use of learning rate scheduler, the method achieves local minima in fewer iterations compared to other models. With the help of pruning we  introduce factor of sparsity which is aimed at reducing the number of trainable parameters while still maintianing a fairly high test metrics.
+
+
+
+\section{Future Work}
+
+DSC on FeedForward neural networks stands as a testimony proving the proposed new architecture holds water. We see the surge in performance when skip connections along with differentiable connections are introduced. We plan to port t
 
 
 \bibliographystyle{unsrt}  
 \bibliography{references}
-%\bibliography{references}  %%% Remove comment to use the external .bib file (using bibtex).
-%%% and comment out the ``thebibliography'' section.
-
-
-%%% Comment out this section when you \bibliography{references} is enabled.
-% \begin{thebibliography}{1}
-
-% \bibitem{kour2014real}
-% George Kour and Raid Saabne.
-% \newblock Real-time segmentation of on-line handwritten arabic script.
-% \newblock In {\em Frontiers in Handwriting Recognition (ICFHR), 2014 14th
-%   International Conference on}, pages 417--422. IEEE, 2014.
-
-% \bibitem{kour2014fast}
-% George Kour and Raid Saabne.
-% \newblock Fast classification of handwritten on-line arabic characters.
-% \newblock In {\em Soft Computing and Pattern Recognition (SoCPaR), 2014 6th
-%   International Conference of}, pages 312--318. IEEE, 2014.
-
-% \bibitem{hadash2018estimate}
-% Guy Hadash, Einat Kermany, Boaz Carmeli, Ofer Lavi, George Kour, and Alon
-%   Jacovi.
-% \newblock Estimate and replace: A novel approach to integrating deep neural
-%   networks with existing applications.
-% \newblock {\em arXiv preprint arXiv:1804.09028}, 2018.
-
-% \end{thebibliography}
-
-
 \end{document}
-
-

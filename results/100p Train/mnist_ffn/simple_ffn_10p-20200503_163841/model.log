@@ -1,0 +1,65 @@
+Config: 
+ {
+  "model_name": "simple_ffn_10p",
+  "num_classes": 10,
+  "in_features": 784,
+  "epochs": 10,
+  "batch_size": 256,
+  "lr": 0.01,
+  "dnn_config": {
+    "layers": [
+      10,
+      10,
+      10
+    ]
+  }
+} 
+
+Model: 
+
+LinearClassifier(
+  (layers): ModuleList(
+    (0): Linear(in_features=784, out_features=10, bias=True)
+    (1): Linear(in_features=10, out_features=10, bias=True)
+    (2): Linear(in_features=10, out_features=10, bias=True)
+  )
+  (relu_activation): ReLU()
+  (softmax_activation): Softmax(dim=-1)
+)
+
+
+Summary: 
+
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Linear-1                   [-1, 10]           7,850
+              ReLU-2                   [-1, 10]               0
+            Linear-3                   [-1, 10]             110
+              ReLU-4                   [-1, 10]               0
+            Linear-5                   [-1, 10]             110
+           Softmax-6                   [-1, 10]               0
+================================================================
+Total params: 8,070
+Trainable params: 8,070
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 0.00
+Forward/backward pass size (MB): 0.00
+Params size (MB): 0.03
+Estimated Total Size (MB): 0.03
+----------------------------------------------------------------
+
+
+Train Epoch: 1 | Loss: -0.677793 | Acc: 0.6857| MSE: 0.0559
+Train Epoch: 2 | Loss: -0.741942 | Acc: 0.7433| MSE: 0.0492
+Train Epoch: 3 | Loss: -0.744363 | Acc: 0.7452| MSE: 0.0495
+Train Epoch: 4 | Loss: -0.749630 | Acc: 0.7501| MSE: 0.0488
+Train Epoch: 5 | Loss: -0.747943 | Acc: 0.7482| MSE: 0.0493
+Train Epoch: 6 | Loss: -0.751206 | Acc: 0.7513| MSE: 0.0488
+Train Epoch: 7 | Loss: -0.749601 | Acc: 0.7499| MSE: 0.0493
+Train Epoch: 8 | Loss: -0.753097 | Acc: 0.7533| MSE: 0.0487
+Train Epoch: 9 | Loss: -0.749366 | Acc: 0.7497| MSE: 0.0496
+Train Epoch: 10 | Loss: -0.746715 | Acc: 0.7469| MSE: 0.0501
+Test | NLL Loss: -186.371759 | Acc: 0.7468 | MSE: 125.94049491882325
+Took 160.6416220664978 seconds

@@ -329,6 +329,11 @@ i \leftarrow \textit{Number of layers}
   }
  }
  
+\Procedure{Recursion}{$a$}
+   \State $a\gets\textsc{Recursion}(a)$ \Comment{Call Recursion again}
+   \State \textbf{return} $a$ 
+\EndProcedure
+ 
  \caption{Dependency based pruning}
 \end{algorithm}
 

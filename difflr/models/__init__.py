@@ -149,7 +149,7 @@ class Model(nn.Module, metaclass=ABCMeta):
                 loss.backward(retain_graph=True)
                 self.optimizer.step()
                 train_metrics['acc'].append(
-                    accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, axis=1).indices.cpu()))
+                    accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, dim=1).indices.cpu()))
                 train_metrics['mse'].append(
                     mse_score(logits=torch.softmax(raw, dim=1), target=target,
                               num_classes=self.config['num_classes'],
@@ -217,7 +217,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             loss = F.nll_loss(logits, target, reduction='mean')
             metrics['loss'].append(loss.item())
             metrics['acc'].append(
-                accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, axis=1).indices.cpu()))
+                accuracy_score(y_true=target.cpu(), y_pred=torch.max(logits, dim=1).indices.cpu()))
             metrics['mse'].append(
                 mse_score(logits=torch.softmax(raw, dim=1), target=target, num_classes=self.config['num_classes'],
                           reduction='mean', device=self.device).item())

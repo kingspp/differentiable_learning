@@ -8,3 +8,4 @@ prettytable==0.7.2
 scikit_learn==0.22.2.post1
 torchsummary==1.5.1
 tensorboard==1.14.0
+matplotlib

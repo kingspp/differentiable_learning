@@ -4,6 +4,8 @@ from difflr.utils import plot_information_transfer
 from difflr.models import LinearClassifierDSC
 from difflr.data import MNISTDataset, CIFARDataset, FashionMNISTDataset
 from difflr.utils.plot_utils import visualize_input_saliency
+import os
+import numpy as np
 
 CONFIG.DRY_RUN = False
 
@@ -16,6 +18,11 @@ def epoch_end_hook(model: LinearClassifierDSC):
         model.metrics['iv'] = [overall_transfer]
     else:
         model.metrics['iv'].append(overall_transfer)
+
+    os.system(f'mkdir -p {model.exp_dir}/viz/')
+    if model.epoch_step in [1, 10, 20, 50, 100]:
+        for e, edge_weight in enumerate(edge_weights):
+            np.save(model.exp_dir + f'/viz/layer{e}_{model.epoch_step}', edge_weight[:model.config['in_features']])
 
 
 def cleanup_hook(model: LinearClassifierDSC):
@@ -30,11 +37,11 @@ def main():
             'model_name': 'mnist_dsc_100pd_100pp_1e1_decay',
             "num_classes": 10,
             'in_features': 784,
-            'epochs': 100,
+            'epochs': 10,
             'batch_size': 32,
             'lr': 1e-1,
             'lr_decay': 1,
-            "train_p": 100,
+            "train_p": 1,
             "test_p": 100,
             'dnn_config':
                 {
@@ -128,8 +135,9 @@ def main():
     for e, config in enumerate(configs):
         model = LinearClassifierDSC(config=config)
         epoch_end_hook(model)
-        model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook, cleanup_hook=cleanup_hook, test_interval=1)
-        print(f'PERCENTAGE COMPLETED: {e / len(configs):.2f}')
+        model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook, cleanup_hook=cleanup_hook, test_interval=-1)
+        print(f'PERCENTAGE COMPLETED: {(e+1) / len(configs):.2f}')
+        exit()
 
 
 if __name__ == '__main__':

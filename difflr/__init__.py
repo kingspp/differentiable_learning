@@ -6,6 +6,7 @@ DIFFLR_MODULE_PATH = os.path.dirname(os.path.abspath(__file__))
 DIFFLR_DATA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/data/'
 DIFFLR_EXPERIMENTS_PATH = os.path.dirname(os.path.abspath(__file__)) + '/experiments/'
 DIFFLR_EXPERIMENTS_RUNS_PATH = os.path.dirname(os.path.abspath(__file__)) + '/experiments/runs'
+DIFFLR_RESULTS = os.path.dirname(os.path.abspath(__file__)) + '/../results/'
 
 
 

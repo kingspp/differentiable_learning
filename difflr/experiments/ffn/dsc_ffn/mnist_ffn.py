@@ -5,6 +5,8 @@ from difflr.models import LinearClassifierDSC
 from difflr.data import MNISTDataset
 import numpy as np
 import random
+import os
+from difflr import DIFFLR_RESULTS
 
 CONFIG.DRY_RUN = False
 
@@ -15,7 +17,10 @@ def epoch_end_hook(model:LinearClassifierDSC):
         model.metrics['iv'] = [overall_transfer]
     else:
         model.metrics['iv'].append(overall_transfer)
-
+    os.system(f'mkdir -p {model.exp_dir}/viz/')
+    if model.epoch_step in [1,10,20,50,100]:
+        for e, edge_weight in enumerate(edge_weights):
+            np.save(model.exp_dir+f'/viz/layer{e}_{model.epoch_step}', edge_weight[:model.config['in_features']])
 
 
 def main():
@@ -25,16 +30,17 @@ def main():
         'model_name': 'mnist_dsc_ffn_10p_10p_Train',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 10,
+        'epochs': 100,
         'batch_size': 256,
         'lr':0.1,
         # 'lr_decay': 1,
         "train_p":10,
         "test_p":100,
+        "reg_coeff":0,
         'dnn_config':
             {
 
-                'layers': [10, 10, 10]
+                'layers': [100, 50, 10]
             },
 
     }

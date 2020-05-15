@@ -27,6 +27,8 @@ class Model(nn.Module, metaclass=ABCMeta):
         self.config = config
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.id = config['model_name'] + '-' + generate_timestamp()
+        self.step = 0
+        self.epoch_step = 0
         if 'exp_dir' not in self.config:
             self.exp_dir = os.path.join(DIFFLR_EXPERIMENTS_RUNS_PATH, self.id)
         else:
@@ -81,6 +83,9 @@ class Model(nn.Module, metaclass=ABCMeta):
         if 'optimizer' not in self.config:
             self.config['optimizer']='adam'
 
+        if 'reg_coeff' not in self.config:
+            self.config['reg_coeff']=0
+
     @abstractmethod
     def evaluate(self, data):
         pass
@@ -121,7 +126,9 @@ class Model(nn.Module, metaclass=ABCMeta):
         start_time = time.time()
         for epoch in tqdm.tqdm(range(1, self.config['epochs'] + 1)):
             train_metrics = {'loss': [], 'acc': [], 'mse': []}
+            self.epoch_step+=1
             for batch_idx, (data, target) in enumerate(train_loader):
+                self.step+=1
                 data, target = data.to(self.device), target.to(self.device)
                 if epoch == 1 and batch_idx == 0 and shape_printer_hook is not None:
                     self.shape_printer_hook(data[1:].shape)
@@ -129,14 +136,14 @@ class Model(nn.Module, metaclass=ABCMeta):
                 raw, logits = self(data)
                 loss = F.nll_loss(logits, target, reduction='mean')
 
-                # if 'dsc' in self.name:
-                #     l2_reg = None
-                #     for weight in self.edge_weights:
-                #         if l2_reg is None:
-                #             l2_reg = torch.sigmoid(weight).norm(2)
-                #         else:
-                #             l2_reg=l2_reg+ torch.sigmoid(weight).norm(2)
-                #     loss= loss+ l2_reg * 0.1
+                if 'dsc' in self.name:
+                    l2_reg = None
+                    for weight in self.edge_weights:
+                        if l2_reg is None:
+                            l2_reg = torch.sigmoid(weight).norm(2)
+                        else:
+                            l2_reg=l2_reg+ torch.sigmoid(weight).norm(2)
+                    loss= loss+ l2_reg * self.config['reg_coeff']
 
                 train_metrics['loss'].append(loss.item())
                 loss.backward(retain_graph=True)
@@ -376,7 +383,7 @@ class LinearClassifierDSC(Model):
         for e, layer in enumerate(self.layers[1:]):
             x = inps[0]
             for i in inps[1:]:
-                x = torch.cat((i, x), 1)
+                x = torch.cat((x,i), 1)
             if e + 1 > len(self.layers) - 2:
                 return layer(x * torch.sigmoid(self.edge_weights[e + 1])), self.softmax_activation(
                     layer(x * torch.sigmoid(self.edge_weights[e + 1])))

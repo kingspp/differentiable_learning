@@ -16,7 +16,7 @@ class Tuner():
         self.timestamp = generate_timestamp()
         self.global_counter = 0
 
-    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100):
+    def tune(self, dataset, cv_split=3, epoch_end_hook=lambda x: x, data_per=100, test_interval=-1):
         with Tee(filename=DIFFLR_EXPERIMENTS_RUNS_PATH + f'/tuner_{self.timestamp}.log'):
             kf = KFold(n_splits=cv_split)
             data_indices = list(range(int(data_per * dataset.total_train_size / 100)))
@@ -41,7 +41,8 @@ class Tuner():
                         print("====" * 25)
                         # Initialize new early stopper object for each model
                         early_stopper = EarlyStopping(mode='max', patience=self.config['patience'])
-                        metrics = model.fit(dataset=dataset, epoch_end_hook=epoch_end_hook, early_stopper=early_stopper)
+                        metrics = model.fit(dataset=dataset, epoch_end_hook=epoch_end_hook, early_stopper=early_stopper,
+                                            test_interval=test_interval)
                         print(json.dumps(metrics['test'], indent=2, cls=CustomJsonEncoder))
                         if 'best_metrics' in self.best_params:
                             if self.best_params['best_metrics']['test']['accuracy'] < metrics['test']['accuracy']:

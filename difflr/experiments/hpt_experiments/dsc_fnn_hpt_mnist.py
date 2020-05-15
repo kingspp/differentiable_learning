@@ -13,11 +13,11 @@ def main():
 
     start_time = time.time()
     config = {
-        'model_name': 'mnist_dscffn_tuned_SGD_100p_params_100p_data',
+        'model_name': 'mnist_dsc_tuned_adam_100p_data_100p_params',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
-        'batch_size': [32],
+        'batch_size': [256],
         'lr': [1e-2, 1e-3],
         'lr_decay': False,
         "train_p": 100,

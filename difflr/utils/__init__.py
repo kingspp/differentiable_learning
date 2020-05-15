@@ -9,7 +9,6 @@ import torch.nn.functional as F
 from prettytable import PrettyTable
 
 
-
 def split_array(array, splits):
     tot = 0
     splitted_array = []
@@ -139,7 +138,7 @@ class CustomJsonEncoder(json.JSONEncoder):
                               np.float64)):
             return float(obj)
         elif isinstance(obj, (np.ndarray,)):
-            return "Long Seq . . ."#obj.tolist()
+            return "Long Seq . . ."  # obj.tolist()
         elif isinstance(obj, set):
             return list(obj)
         else:
@@ -151,17 +150,20 @@ class CustomJsonEncoder(json.JSONEncoder):
 
 
 def confidence_score(predictions, labels):
-    correct_indices={l: [] for l in np.unique(labels)}
+    correct_indices = {l: [] for l in np.unique(labels)}
 
-    for e,(p, l) in enumerate(zip(predictions, labels)):
+    for e, (p, l) in enumerate(zip(predictions, labels)):
         if np.argmax(p) == l:
             correct_indices[l].append(e)
 
     scores = {}
-    for k,v in correct_indices.items():
-        if len(v)>0:
-            scores[str(k)]=round(float(np.max(predictions[v],1).mean().flatten()),2)
-    return scores, round(float(np.mean(list(scores.values()))),2)
+    for k, v in correct_indices.items():
+        if len(v) > 0:
+            scores[str(k)] = round(float(np.max(predictions[v], 1).mean().flatten()), 2)
+    return scores, round(float(np.mean(list(scores.values()))), 2)
 
 
-
+def check_gpu():
+    if not torch.cuda.is_available():
+        print('WARN!! GPU not found!')
+        exit()

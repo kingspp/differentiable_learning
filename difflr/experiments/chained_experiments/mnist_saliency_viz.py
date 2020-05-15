@@ -37,11 +37,11 @@ def main():
             'model_name': 'mnist_dsc_100pd_100pp_1e1_decay',
             "num_classes": 10,
             'in_features': 784,
-            'epochs': 10,
+            'epochs': 100,
             'batch_size': 32,
             'lr': 1e-1,
             'lr_decay': 1,
-            "train_p": 1,
+            "train_p": 100,
             "test_p": 100,
             'dnn_config':
                 {
@@ -137,7 +137,7 @@ def main():
         epoch_end_hook(model)
         model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook, cleanup_hook=cleanup_hook, test_interval=-1)
         print(f'PERCENTAGE COMPLETED: {(e+1) / len(configs):.2f}')
-        exit()
+
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ def main():
 
     start_time = time.time()
     config = {
-        'model_name': 'fashionmnist_simpleffn_tuned_SGD_100p_params_100p_data',
+        'model_name': 'fashionmnist_simpleffn_tuned_adam_100p_params_100p_data',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
@@ -40,7 +40,7 @@ def main():
 
     start_time = time.time()
     config = {
-        'model_name': 'fashionmnist_simpleffn_tuned_SGD_10p_params',
+        'model_name': 'fashionmnist_simpleffn_tuned_adam_10p_params',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
@@ -66,7 +66,7 @@ def main():
     ###########################################################
     start_time = time.time()
     config = {
-        'model_name': 'fashionmnist_simpleffn_tuned_SGD_10p_data',
+        'model_name': 'fashionmnist_simpleffn_tuned_adam_10p_data',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,
@@ -92,7 +92,7 @@ def main():
     ###########################################################
     start_time = time.time()
     config = {
-        'model_name': 'fashionmnist_simpleffn_tuned_SGD_10p_params_10p_data',
+        'model_name': 'fashionmnist_simpleffn_tuned_adam_10p_params_10p_data',
         "num_classes": 10,
         'in_features': 784,
         'epochs': 100,

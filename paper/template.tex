@@ -46,16 +46,17 @@
 \title{Differentiable Learning by means of Neural Network Pruning}
 
 \author{
-  Prathyush S Parvatharaju\thanks{Use footnote for providing further
-    information about author (webpage, alternative
-    address)---\emph{not} for acknowledging funding agencies.} \\
+  Prathyush S Parvatharaju$\ ^{1}$\\
+%   \thanks{Use footnote for providing further
+%     information about author (webpage, alternative
+%     address)---\emph{not} for acknowledging funding agencies.} \\
   Department of Data Science\\
   Worcester Polytechnic University\\
   Worcester, MA 01609 \\
   \texttt{psparvatharaju@wpi.edu} \\
   %% examples of more authors
    \And
- Shreesha Narasimha Murthy \\
+ Shreesha Narasimha Murthy$\ ^{2}$ \\
   Department of Data Science\\
   Worcester Polytechnic University\\
   Worcester, MA 01609 \\
@@ -66,9 +67,9 @@
 \maketitle
 
 \begin{abstract}
-The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as DNNs can process data and emulate relationships in higher dimensions. Deeper neural networks are difficult to train and the use of residual learning in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a decision process of placing short-circuit connections between layers as a gradient-based approach would yield better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm based on Information Transfer derived from differentiable short-circuits. 
+The idea of linear flow i.e, each node in one layer is connected to a certain weight $\hat{W_{ij}}$ to every other node in the following layer, for the deep neural network is limiting in the sense of the way we, humans think. The linear flow would be a constraint for a DNN as they process data and emulate relationships in higher dimensions. As the networks get deep, they are difficult to train and the use of residual learning in the form of short-circuit connections eases the process of training the network. By replacing the linear flow constraint with a gradient based decision process combined with skip connections yields better results. We propose a novel idea of extending the capabilities of previously used short-circuits as differentiable functions, essentially solving “What to feed?”. To tackle the problem, “When to stop?” we propose an algorithm for early stopping criterion based on Information Transfer derived from differentiable short-circuits. 
 
-In our experiments, we show that increased weighted representation capability results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture builds better representations with minimal data.
+In our experiments, we show that the increase in weighted representation capability of the network results in achieving better accuracy in fewer iterations compared to the standard architecture. We also demonstrate that with 10\% of the previous parameters, the architecture achieves similar results to standard architecture. Another set of experiments shows our proposed architecture builds better representations with minimal data. In the end we show viz
 \end{abstract}
 
 
@@ -190,7 +191,9 @@ Params= \sum_{n=1}^{m}\left[
 For the aforementioned 3 layer network, an exponential increase of 30\% i.e, 122,750 parameters has to be trained.
 
 \subsection{Differentiable Short Circuit}
-Finally, we proposes Differentiable Short Circuit (DSC) to counter the effect of exponential increase in training parameters due to merge operation. It is done so by expressing a connection between layers as a weighted sigmoid gate. We introduce a connection weight $\hat{C}$, a trainable parameter whose gradients are updated by $\frac{\partial loss}{\partial \hat{C}}$. A change in the value of the connection weight affects the loss. Based on this, we use gradient descent algorithm to obtain optimum values of connection weight. The direction and magnitude of the weight affects the performance of the network by introducing unwanted changes in the architecture. In order to check these effects, a transformation function that is capable of restricting the direction and magnitude of the weight in a specified range is used. Neural arithmetic logic unit \cite{Trask2018NeuralAL} propose a layer whose transformation matrix $\hat{W}$ consists just of -1's, 0's and 1's. In order to prevent the layer from changing the scale of the representation of the numbers when mapping the input to the output, a squashing non-linearity ($\sigma$) is applied on just the weights, $\hat{W}$.  Hence, a sigmoid function, defined in equation \ref{eq:sigmoid_activation}, is applied on $\hat{C}$. Along with forcing the range of output to be in a specific interval, it also helps in preserving the direction of the input. Figure \ref{fig:DSC.png} shows the use of connection weights applied for the results of concat operation, essentially keeping the connection in check before it is fed to the next layer. The difference in representation of connections between various blocks and the gradient operations shows the number of gradient computations required for the layer or the operation. Equations \ref{eq:dsc_math_representation} provides mathematical representation of the network.
+Finally, we proposes Differentiable Short Circuit (DSC) to counter the effect of exponential increase in training parameters due to merge operation. It is done so by expressing a connection between layers as a weighted sigmoid gate. We introduce a connection weight $\hat{C}$, a trainable parameter whose gradients are updated by $\frac{\partial loss}{\partial \hat{C}}$. A change in the value of the connection weight affects the loss. Based on this, we use gradient descent algorithm to obtain optimum values of connection weight. The direction and magnitude of the weight affects the performance of the network by introducing unwanted changes in the architecture. 
+
+In order to check these effects, a transformation function that is capable of restricting the direction and magnitude of the weight in a specified range is used. Neural arithmetic logic unit \cite{Trask2018NeuralAL} propose a layer whose transformation matrix $\hat{W}$ consists just of -1's, 0's and 1's. In order to prevent the layer from changing the scale of the representation of the numbers when mapping the input to the output, a squashing non-linearity ($\sigma$) is applied on just the weights, $\hat{W}$.  Hence, a sigmoid function, defined in equation \ref{eq:sigmoid_activation}, is applied on $\hat{C}$. Along with forcing the range of output to be in a specific interval, it also helps in preserving the direction of the input. Figure \ref{fig:DSC.png} shows the use of connection weights applied for the results of concat operation, essentially keeping the connection in check before it is fed to the next layer. The difference in representation of connections between various blocks and the gradient operations shows the number of gradient computations required for the layer or the operation. Equations \ref{eq:dsc_math_representation} provides mathematical representation of the network.
 
 \noindent\begin{minipage}{.45\textwidth}
    \centering
@@ -299,16 +302,16 @@ With the implementation of straight through estimator, the model parameters can 
    \centering
    \includegraphics[scale=0.1]{paper/Pruning1.png}
    \captionof{figure}{2-Layer DSC architecture}
-%   \label{fig:cscore_100p_model.png}
+  \label{fig:pruning1.png}
 \end{minipage}
 \begin{minipage}{.4\textwidth}
 \centering
    \includegraphics[scale=0.09]{paper/Pruning2.png}
    \captionof{figure}{Pruned connections}
-%   \label{fig:c.score_10p_model.png}
+\label{fig:pruning2.png}
 \end{minipage}
 
-
+Figure \ref{fig:pruning1.png} shows a 2-layered DSC network with all the necessary operations (concat, multiply . . .) including skip connection from input to dense layer. To the right Figure \ref{fig:pruning2.png} shows connections from input to dense layers. The floting point number represents the $\sigma(\hat{C_{i}})$. Based on the binary gate, a threshold of 0.5 is used, and the ones having values less than 0.5 have a different representation to mark the connection to be pruned.
 
 \noindent\begin{minipage}{.5\textwidth}
   \begin{algorithm}[H]
@@ -420,12 +423,15 @@ DSC            & 17378          & 17378                  & 27838             \\ 
 
 \subsection{100p Data - Large Training Data, Large Test Data}
 
+Results show that DSC achieves best performance across different datasets compared to standard and GSC architectures. The difference in performance is noticeably higher in CIFAR-10 due to its increased pattern complexity.
+
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.4]{paper/100p_runs.png}
+\includegraphics[scale=0.3]{paper/100p_runs.png}
 \caption{100p Train comparison}
 \label{fig:infotransfer}
 \end{figure}
+Our proposed architecture achieves better accuracy in fewer iterations (5000 iterations less) compared to standard architecture. When 10p model is used, the accuracy does drop but is relatively better than the standard network.
 
 \begin{table}[H]
 \centering
@@ -449,8 +455,8 @@ DSC            & 17378          & 17378                  & 27838             \\ 
                                   &                                 & \textbf{FashionMNIST}    & \textbf{0.71 @ 700}  & \textbf{0.07 @ 700}  & \textbf{0.74}            \\
                                   &                                 & \textbf{CIFAR-10}        & \textbf{0.29 @ 700}  & \textbf{2.2 @ 700}   & \textbf{0.38}            \\ \cmidrule(l){3-6} 
 \end{tabular}
-\caption{100\% Data}
-\label{tab:my-table}
+\caption{100\% Data Results}
+\label{tab:100p_data_table}
 \end{table}
 
 
@@ -462,11 +468,12 @@ DSC            & 17378          & 17378                  & 27838             \\ 
 \subsection{10p Data - Minimal Training Data, Large Test Data}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.4]{paper/10p_runs.png}
+\includegraphics[scale=0.3]{paper/10p_runs.png}
 \caption{10p Train comparison}
-\label{fig:infotransfer}
+\label{fig:10p_runs}
 \end{figure}
 
+This set tests the generalization of the networks. Figure \ref{fig:10p_runs} shows the performance of DSC against standard architecture across different datasets. As training samples are limited to 10\% of the original data and a large test set it used, we can monitor the whether the network is overfitted towards the training data. This is not the case with our proposed architecture. Table \ref{tab:10p_data_table}'s Test accuracy of DSC establishes that our proposed architecture has reduced overfit compared to others. There exists a noticable difference in performance of standard architecture in test metrics when compared to 100p data. The same is not observed in the DSC, as 10p data model follows 100p data mode closely.
 
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
@@ -492,8 +499,8 @@ DSC            & 17378          & 17378                  & 27838             \\ 
                                   &                                     & \textbf{FashionMNIST}             & \textbf{0.77 @ 1400}      & \textbf{1.51 @ 1400}  & \textbf{0.77}                     \\
                                   &                                     & \textbf{CIFAR-10}                 & \textbf{0.43 @ 700}       & \textbf{1.6 @ 700}    & \textbf{0.26}                     \\ \cline{3-6} 
 \end{tabular}
-\caption{10\% Data}
-\label{tab:my-table}
+\caption{10\% Data Results}
+\label{tab:10p_data_table}
 \end{table}
 
 
@@ -521,13 +528,25 @@ To comprehend the nature of gated connections, we create thresholded heatmaps of
 
 Our work establishes the usefulness of global short circuits to improve the performance of the network by enabling the model to develop much deeper constructs compared to the standard architecture. We elucidate issues with global short circuit and propose differentiable short circuit as a solution. Differentiable short circuit builds upon GSC  with the goal of scalability. DSC archiecture with the help of connection weights brings in innovations such as Information Transfer Rate, Pruning, Layer intake visualization among others. The architecture achieves the top accuracy in fewer iterations compared to standard architecture and GSC across all datasets. 
 
-From our experiments we can conclude that DSC reduces model overfit, achieves high training accuracy while still maintaing a relatively high test accuracy. As a counter to the argument - increase in the trainable parameters is solely reponsible to the increase in performance, we design and test a relatively smaller network without deteriorating the performance of the original network. Added benefit is that our proposed method is capable of learning at much faster pace ($learning rate > 0.1$) and with the optimal use of learning rate scheduler, the method achieves local minima in fewer iterations compared to other models. With the help of pruning we  introduce factor of sparsity which is aimed at reducing the number of trainable parameters while still maintianing a fairly high test metrics.
+From our experiments we can conclude that DSC reduces model overfit, achieves high training accuracy while still maintaing a relatively high test accuracy. As a counter to the argument - increase in the trainable parameters is solely reponsible to the increase in performance, we design and test a relatively smaller network without deteriorating the performance of the original network. Added benefit is that our proposed method is capable of learning at much faster pace ($learning rate > 0.1$) and with the optimal use of learning rate scheduler, the method achieves local minima in fewer iterations compared to other models. With the help of pruning we introduce factor of sparsity which is aimed at reducing the number of trainable parameters while still maintaining a fairly high test metrics. This can be highly beneficial on mobile and embedded devices where hardware resource is scarce.
 
 
 
 \section{Future Work}
 
-DSC on FeedForward neural networks stands as a testimony proving the proposed new architecture holds water. We see the surge in performance when skip connections along with differentiable connections are introduced. We plan to port t
+DSC on Feed Forward neural networks stands as a testimony proving the proposed new architecture holds water. We see the surge in performance when skip connections along with differentiable units are introduced. 
+
+
+\begin{itemize}
+  \item We plan to implement a Differentiable Convolutional Neural Network, where a layer $N$ is fed filters from every layer before it i.e. ($N-1$ to $1$).
+  \item Also, many interesting questions about how a Deep Neural Network captures representations can be answered from the process of Differentiable Network Pruning. To name a few,
+  
+  \begin{itemize}
+    \item One can see if DSC has modelled any direct relationship between input layer and output layer(as DSC maintains connection weights between input and output. If the connection weights are close to 1, then all of input is being used by the output layer).
+    \item Also, it is interesting to analyze which is the layer on which the output depends the most(i.e. output layer feeds off of every previous layer's output). 
+  \end{itemize}
+  \item Analyze the parameters to be cut down by pruning and dynamically control the pruning percentage based on required accuracy levels or training times etc.
+\end{itemize}
 
 
 \bibliographystyle{unsrt}  

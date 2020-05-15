@@ -1,6 +1,8 @@
 import torch
 
-print('GPU ', torch.cuda.is_available())
+if not torch.cuda.is_available():
+    print("GPU Not available . . .")
+    exit()
 from difflr.models import LinearClassifier
 from difflr.data import MNISTDataset
 from difflr import CONFIG

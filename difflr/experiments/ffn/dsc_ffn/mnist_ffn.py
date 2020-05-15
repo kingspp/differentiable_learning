@@ -7,6 +7,7 @@ import numpy as np
 import random
 import os
 from difflr import DIFFLR_RESULTS
+from difflr.utils.plot_utils import visualize_input_saliency
 
 CONFIG.DRY_RUN = False
 
@@ -22,6 +23,9 @@ def epoch_end_hook(model:LinearClassifierDSC):
         for e, edge_weight in enumerate(edge_weights):
             np.save(model.exp_dir+f'/viz/layer{e}_{model.epoch_step}', edge_weight[:model.config['in_features']])
 
+def cleanup_hook(model:LinearClassifierDSC):
+    visualize_input_saliency(data_dir=model.exp_dir+'/viz/', dataset_name=f'MNIST', save_path=model.exp_dir+'/saliency.png')
+
 
 def main():
     torch.manual_seed(0)
@@ -30,7 +34,7 @@ def main():
         'model_name': 'mnist_dsc_ffn_10p_10p_Train',
         "num_classes": 10,
         'in_features': 784,
-        'epochs': 100,
+        'epochs': 10,
         'batch_size': 256,
         'lr':0.1,
         # 'lr_decay': 1,
@@ -47,7 +51,8 @@ def main():
 
     model = LinearClassifierDSC(config=config)
     epoch_end_hook(model)
-    model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook)
+    model.fit(dataset=MNISTDataset, epoch_end_hook=epoch_end_hook,
+              cleanup_hook=cleanup_hook)
 
 
 if __name__ == '__main__':

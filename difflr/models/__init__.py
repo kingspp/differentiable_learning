@@ -91,7 +91,7 @@ class Model(nn.Module, metaclass=ABCMeta):
         pass
 
     def run_train(self, train_loader, valid_loader, test_loader, log_type, log_interval, batch_end_hook, epoch_end_hook,
-                  shape_printer_hook,test_interval, early_stopper=None, ):
+                  shape_printer_hook,test_interval, early_stopper=None):
         self.train()
 
         dataiter = iter(train_loader)
@@ -257,7 +257,8 @@ class Model(nn.Module, metaclass=ABCMeta):
             self.writer = None
 
     def fit(self, dataset, log_type='epoch', log_interval=1, test_interval=-1,
-            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None, early_stopper=None):
+            batch_end_hook=lambda x: x, epoch_end_hook=lambda x: x, shape_printer_hook=None, early_stopper=None,
+            cleanup_hook = lambda x: x):
         if not CONFIG.DRY_RUN:
             self.writer = SummaryWriter(f'{self.exp_dir}/graphs')
         self.to(self.device)
@@ -283,7 +284,7 @@ class Model(nn.Module, metaclass=ABCMeta):
             if not CONFIG.DRY_RUN:
                 self.save()
                 json.dump(self.metrics, open(self.exp_dir + '/metrics.json', 'w'), cls=CustomJsonEncoder, indent=2)
-
+        cleanup_hook(self)
         return self.metrics
 
     def save(self):

@@ -22,7 +22,8 @@ def main():
         'epochs': 100,
         'batch_size': [256],
         'lr': [1e-2, 1e-3],
-        'lr_decay': False,
+        'lr_decay': [False],
+        'reg_coeff': [False],
         "train_p": 100,
         "test_p": 100,
         'dnn_config':
@@ -49,7 +50,8 @@ def main():
         'epochs': 100,
         'batch_size': [256],
         'lr': [1e-2, 1e-3],
-        'lr_decay': False,
+        'lr_decay': [False],
+        'reg_coeff': [False],
         "train_p": 100,
         "test_p": 100,
         'dnn_config':
@@ -75,7 +77,8 @@ def main():
         'epochs': 100,
         'batch_size': [32],
         'lr': [1e-2, 1e-3],
-        'lr_decay': False,
+        'lr_decay': [False],
+        'reg_coeff': [False],
         "train_p": 100,
         "test_p": 100,
         'dnn_config':
@@ -101,7 +104,8 @@ def main():
         'epochs': 100,
         'batch_size': [256],
         'lr': [1e-2, 1e-3],
-        'lr_decay': False,
+        'lr_decay': [False],
+        'reg_coeff': [False],
         "train_p": 100,
         "test_p": 100,
         'dnn_config':

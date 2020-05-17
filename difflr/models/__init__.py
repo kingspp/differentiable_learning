@@ -339,7 +339,7 @@ class LinearClassifierGSC(Model):
         for e, layer in enumerate(self.layers[1:]):
             x = inps[0]
             for i in inps[1:]:
-                x = torch.cat((i, x), 1)
+                x = torch.cat((x,i), 1)
             if e + 1 > len(self.layers) - 2:
                 x = layer(x)
                 return x, self.softmax_activation(x)
